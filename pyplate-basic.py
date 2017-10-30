@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------
 # 
-# Pyplate basic example.
+# __DESC__
 #
-# File:    pyplate-basic.py
-# Author:  Peter Malmberg <peter.malmberg@gmail.com>
-# Date:    2016-02-19
-# Version: 0.2
+# File:    __NAME__.py
+# Author:  __AUTHOR__
+# Date:    __DATE__
+# License: __LICENSE__
 # Python:  >=3
-# Licence: MIT
 # 
 # -----------------------------------------------------------------------
+# This file is generated from pyplate Python template generator.
+# Pyplate is developed by
+# Peter Malmberg <peter.malmberg@gmail.com>
 #
 
 # Imports -------------------------------------------------------------------
@@ -21,16 +23,14 @@ import os
 import traceback
 from datetime import datetime, date, time
 
-
 # Settings ------------------------------------------------------------------
 
 
 # Code ----------------------------------------------------------------------
 
 def main():
-    print("Pyplate basic example.")
+    print("Pyplate basic template.")
     sys.exit(0);
-
 
 
 if __name__ == "__main__":
@@ -47,4 +47,3 @@ if __name__ == "__main__":
         traceback.print_exc()
         os._exit(1)
                 
-

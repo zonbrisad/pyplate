@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# -----------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # 
-# A Python script template
+# __DESC__
 #
-# File:    pyplate.py
-# Author:  Peter Malmberg <peter.malmberg@gmail.com>
-# Date:    2016-02-19
-# Version: 0.2
-# Python:  >=3
-# License: MIT
+# File:    __NAME__.py
+# Author:  __AUTHOR__
+# Date:    __DATE__
+# License: __LICENSE__
+# Python:  3
 # 
-# -----------------------------------------------------------------------
+#----------------------------------------------------------------------------
+# Pyplate
+#   This file is generated from pyplate Python template generator.
+#
+# Pyplate is developed by:
+#   Peter Malmberg <peter.malmberg@gmail.com>
+#
+# Available at:
+#   https://github.com/zobrisad/pyplate.git
+# 
+# ---------------------------------------------------------------------------
 #
 
 # Imports -------------------------------------------------------------------
@@ -23,50 +32,75 @@ import logging
 import argparse
 from datetime import datetime, date, time
 
-
 # Settings ------------------------------------------------------------------
 
 # Application settings
-AppName     = "pyplate"
+AppName     = "__NAME__"
 AppVersion  = "0.1"
-AppLicense  = "MIT"
-AppAuthor   = "Peter Malmberg <peter.malmberg@gmail.com>"
-
-# Uncomment to use logfile
-#LogFile     = "pyplate.log"
+AppLicense  = "__LICENSE__"
+AppAuthor   = "__AUTHOR__"
+AppDesc     = "__DESC__"
+AppOrg      = "__ORG__"
 
 # Code ----------------------------------------------------------------------
-
-
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
     # options parsing
-    parser = argparse.ArgumentParser(description="C/C++ template generator")
-    parser.add_argument("--helpx",   help="Print help informationt")
-    parser.add_argument("--newcpp",  action="store_true", help="Create a new C++ and H file set")
-    parser.add_argument("--licence", type=str,            help="Licence of new file", default="")
-    parser.add_argument("--author",  type=str,            help="Author of file",      default="")
-    parser.add_argument("--dir",     type=str,            help="Directory where to store file",  default=".")    
-    parser.add_argument("--info",    action="store_true", help="Information about script")
+    parser = argparse.ArgumentParser(
+             prog=AppName+'.py', 
+             add_help = True, 
+             usage=AppName+'.py command [options]' ,
+             description=AppDesc,
+             epilog=''
+             )
+             
+    parser.add_argument('--version', action='version', version='%(prog)s '+AppVersion)
+    parser.add_argument("--info",  action="store_true", help="Information about script")
+
+    # Some examples of parameters (rename or remove unwanted parameters)
+    parser.add_argument('-a',    action="store_true",        help="Boolean type argument")
+    parser.add_argument('-b',    action="store",  type=str,  help="String type argument",  default="HejHopp")
+    parser.add_argument('-c',    action="store",  type=int,  help="Integer type argument with default value", default=42)
+    parser.add_argument('-d',    action="append", type=int,  help="Append values to list", dest='dlist', default=[] )
+    parser.add_argument('-e',    action="store", type=int,   help="Integer type argument, no default")
+    parser.add_argument('-f',    choices=['aa', 'bb', 'cc'], help="String choices argument")
+    parser.add_argument('-g',    type=int, choices=range(1,10), help="Integer choices argument")
     
     args = parser.parse_args()
 
     if args.info:
         printInfo()
-        sys.exit(0)
+        return
+    
+    if args.a:
+        print("Boolean argument")
+        
+    if args.b:
+        print("String argument = " + args.b)
+        
+    if args.e:
+        print("Integer argument no default = " + str(args.e) )
+            
+    if args.c:
+        print("Integer argument default = " + str(args.c) )
 
+    if args.dlist:
+        print("List = ", args.dlist )
+    
+    return
+
+    # Print options default
     parser.print_help()
-    sys.exit(0)
-
-
+    
 #
 #
 def printInfo():
-    print("Script name:     " + AppName    )
-    print("Script version:  " + AppVersion )
-    print("Script path:     " + scriptPath )
+    print("Application name:   " + AppName    )
+    print("Application Ver.:   " + AppVersion )
+    print("Application desc.:  " + AppDesc    )
+    print("File path:          " + scriptPath )
         
 
 #
@@ -111,13 +145,15 @@ def query_yn(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
 
 
-#
+
 # Absolute path to script itself        
-#
 scriptPath = os.path.abspath(os.path.dirname(sys.argv[0]))
 
-#
-# 
+# Uncomment to use logfile
+#LogFile     = "pyplate.log"
+
+
+# Main program handle 
 if __name__ == "__main__":
     try:
         main()
