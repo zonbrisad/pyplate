@@ -136,20 +136,36 @@ createProject() {
 ##N- Pyplate
 
 
-news() { ##D Create new simple python project
+newb() { ##D Create a new basic python program
   newScript basic.py
 #  createProject "Creating new simple python project" ${BP_SCRIPT_PATH}/pyplate-basic.py
 }
 
-new() { ##D Create new cli python project with option parsing
-  createProject "Creating new python project" ${BP_SCRIPT_PATH}/pyplate.py
+newc() { ##D Create new cli python project with option parsing
+  newScript cli.py
+#  createProject "Creating new python project" ${BP_SCRIPT_PATH}/pyplate.py
 }
 
-newqt() { ##D Create new QT5 python project 
+newqt() { ## Create new QT5 python project 
   createProject "Creating new Qt5 python project" ${BP_SCRIPT_PATH}/pyplate-qt5.py
 }
 
-##C-DEV Setup
+##C- DEV Templated
+
+eb() { ##C DEV Edit basic template
+  bpEdit ${TEMPLATES}/basic.py
+}
+
+ec() { ##C DEV Edit cli template
+  bpEdit ${TEMPLATES}/cli.py
+}
+ 
+eh() { ##C DEV Edit header
+  bpEdit ${TEMPLATES}/header
+}
+
+
+##C- DEV Setup
 
 install() { ##C DEV Install init module
   bpAddModule ${BP_DIR}/pypl_init
