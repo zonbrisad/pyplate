@@ -52,12 +52,68 @@ bpUserSettings() {
   if [ -e ${BP_DIR}/DEV ]; then
 	  DEV=1
 	fi
+	
+	PREAMBLE="#!/usr/bin/env python3"
+	TEMPLATES=${BP_DIR}/templates
+	HEADER=${TEMPLATES}/header
+
 }
 #---------------------------------------------------------------------
 # User defined functions
 #---------------------------------------------------------------------
 
+#
+# $1 source file
+# $2 destination file
+#
+bpAppend() { ##I Append file to file
+#  if [ ! -f $1 ]; then
+#    bpError "Can't append file $( bpColorizeFile ${1}) to $( bpColorizeFile ${2} )."
+#  fi
+  if cat $1 >> $2 ; then
+	  bpOk "$( bpColorizeFile ${1}) appended to $( bpColorizeFile ${2} )."
+  else
+	  bpError "Can't append file $( bpColorizeFile ${1}) to $( bpColorizeFile ${2} )."
+  fi
+}
+					
+
 ##- Create
+#
+# Create a new script
+#
+# $1 template file
+# $2
+# $3 type
+#
+newScript() {
+  t=$3
+	name=$(bpRead "Enter name of new ${t}" "")
+	
+  script="${name}.py"
+  									
+  if [ -e "${script}" ]; then
+    bpError "File ${E_BR_CYAN}${script}${E_END} already exists"
+    return
+  fi
+															
+  desc=$(bpRead "Enter description" )
+  author=$(bpRead "Enter author" "${BP_NAME} <${BP_EMAIL}>" )
+																	
+  echo "${PREAMBLE}"            >| ${script}
+  echo "$( bpImport $HEADER )"  >> ${script}
+	bpAppend ${TEMPLATES}/$1   ${script}
+  chmod +x ${script}
+																									
+  bpReplace "${script}" "__NAME__"    "${name}"
+  bpReplace "${script}" "__DATE__"    "${BP_DATE}"
+  bpReplace "${script}" "__LICENSE__" "${BP_LICENSE}"
+  bpReplace "${script}" "__AUTHOR__"  "${author}"
+  bpReplace "${script}" "__DESC__"    "${desc}"
+																
+  bpOk "Created file $script"
+}
+
 
 createProject() {
   echo -e ${1}
@@ -81,7 +137,8 @@ createProject() {
 
 
 news() { ##D Create new simple python project
-  createProject "Creating new simple python project" ${BP_SCRIPT_PATH}/pyplate-basic.py 
+  newScript basic.py
+#  createProject "Creating new simple python project" ${BP_SCRIPT_PATH}/pyplate-basic.py
 }
 
 new() { ##D Create new cli python project with option parsing
