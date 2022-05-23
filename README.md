@@ -28,18 +28,12 @@ Ordinary text. <sup>This is a superscript text</sup>
 
 `quoting code`
 
-| Style  | Syntax | Example | Output |
-|------- |--------|---------|--------|
-| Bold   | `** ** |  \* **This is bold text** \*   | **This is bold text** |
-| Italic | `* *`  |  `*This text is italicized*` | *This text is italicized* |
-
-~~This was mistaken text~~
-
-**This text is _extremely_ important**
-
-Ordinary text. <sub>This is a subscript text</sub>
-
-Ordinary text. <sup>This is a superscript text</sup>
+| Style  | Syntax  | Example | Output |
+|------- |-------- |---------|--------|
+| Bold   | `** **` | `**This is bold text**`  | **This is bold text** |
+| Italic | `* *`   | ` *This text is italicized*` | *This text is italicized* |
+| Strikethrough | `~~ ~~` | `~~This was mistaken text~~` | ~~This was mistaken text~~ |
+| Subscript | `<sup> </sup>` | `Ordinary text. <sup>This is a superscript text</sup>` |  Ordinary text. <sup>This is a superscript text</sup> | Ordinary text. <sup>This is a superscript text</sup>
 
 > Text that is a quote
 
