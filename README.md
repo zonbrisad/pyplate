@@ -28,10 +28,10 @@ Ordinary text. <sup>This is a superscript text</sup>
 
 `quoting code`
 
-| Style | Syntax | Example |
-|-------|--------|---------|
-| Bold  |        | **This is bold text** |
-| Italic | | *This text is italicized* |
+| Style | Syntax | Example | Output |
+|-------|--------|---------|--------|
+| Bold  |        |  /* **This is bold text** /*   | **This is bold text** |
+| Italic |       |  | *This text is italicized* |
 
 ~~This was mistaken text~~
 
