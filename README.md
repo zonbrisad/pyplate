@@ -20,6 +20,10 @@
 
 **This text is _extremely_ important**
 
-<sub>This is a subscript text</sub>
+Ordinary text. <sub>This is a subscript text</sub>
 
-<sup>This is a superscript text</sup>
+Ordinary text. <sup>This is a superscript text</sup>
+
+> Text that is a quote
+
+`quoting code`
