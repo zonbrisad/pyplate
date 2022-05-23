@@ -1,9 +1,21 @@
 
-# PyPlates
+# PyPlate
+
+**Author:** Peter Malmberg <peter.malmberg@gmail.com>
+**License:** MIT
+
+## Description
+
+Pyplate is a python script code generator
+
+## Features
+- Generate simple python script
 
 
-
-
+### ToDo
+- Class generation
+- Custom header
+- Project mgt
 
 ## Some examples, remove after creation
 
