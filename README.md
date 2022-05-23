@@ -30,8 +30,9 @@ Ordinary text. <sup>This is a superscript text</sup>
 
 | Style | Syntax | Example | Output |
 |-------|--------|---------|--------|
-| Bold  |        |  /* **This is bold text** /*   | **This is bold text** |
-| Italic |       |  | *This text is italicized* |
+| Bold  |        |  \* **This is bold text** \*   | **This is bold text** |
+| Italic |       |  \* *This text is italicized* \* | *This text is
+italicized* |
 
 ~~This was mistaken text~~
 
