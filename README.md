@@ -27,3 +27,16 @@ Ordinary text. <sup>This is a superscript text</sup>
 > Text that is a quote
 
 `quoting code`
+
+
+### Tables
+| Header 1 | Header 2 |
+| -------- | -------- |
+|   C1     | C2       |
+|   C3     | C4       |
+
+
+
+## Links
+
+[Markup basics](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
