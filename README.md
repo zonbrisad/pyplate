@@ -29,6 +29,7 @@ Ordinary text. <sup>This is a superscript text</sup>
 `quoting code`
 
 | Style | Syntax | Example |
+|-------|--------|---------|
 | Bold  |        | **This is bold text** |
 | Italic | | *This text is italicized* |
 
