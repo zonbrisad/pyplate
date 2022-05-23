@@ -32,12 +32,25 @@ void main(int arc, char argv**) {
 
 
 
-### Tables
+## Tables
+
 | Header 1 | Header 2 |
 | -------- | -------- |
 |   C1     | C2       |
 |   C3     | C4       |
 
+
+## List
+
+- Item 1
+- Item 2
+- Item 3
+
+## Task list
+
+- [ ] Task 1
+- [x] Task 2
+- [ ] Task 3
 
 
 ## Links
