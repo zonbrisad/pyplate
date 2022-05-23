@@ -53,6 +53,20 @@ void main(int arc, char argv**) {
 - [ ] Task 3
 
 
+## Colapsed section
+
+<details><summary>CLICK ME</summary>
+<p>
+
+#### We can hide anything, even code!
+
+```ruby
+puts "Hello World"
+```
+
+</p>
+</details>
+
 ## Links
 
 [Markup basics](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)
