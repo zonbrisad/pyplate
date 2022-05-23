@@ -33,7 +33,8 @@ Ordinary text. <sup>This is a superscript text</sup>
 | Bold   | `** **` | `**This is bold text**`  | **This is bold text** |
 | Italic | `* *`   | ` *This text is italicized*` | *This text is italicized* |
 | Strikethrough | `~~ ~~` | `~~This was mistaken text~~` | ~~This was mistaken text~~ |
-| Subscript | `<sup> </sup>` | `Ordinary text. <sup>This is a superscript text</sup>` |  Ordinary text. <sup>This is a superscript text</sup> | Ordinary text. <sup>This is a superscript text</sup>
+| Subscript | `<sub> </sub>` | `Ordinary, <sup>subscript</sub>` | Ordinary <sub>subscript</sub> |
+| Superscript | `<sup> </sup>` | `Ordinary, <sup>superscript</sup>` | Ordinary <sup>superscript</sup> |
 
 > Text that is a quote
 
