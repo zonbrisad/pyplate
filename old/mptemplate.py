@@ -93,14 +93,23 @@ class CConf():
 
 class template(object):
     """docstring for template."""
-    header = 0
+    header = ""
     filename = ""
     modulename = ""
+    imports = ""
 
     def __init__(self, arg):
         super(template, self).__init__()
         self.arg = arg
 
+    def addImport(self, imp):
+        
+    def addHeader(self, header):
+        
+    def addSeparator(self):
+        
+    def write(self):
+    
 
 
 class CFile():
