@@ -3,22 +3,76 @@
 
 **Author:** Peter Malmberg <peter.malmberg@gmail.com>
 
-**License:** MIT
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## Description
+  - [About](#about)
+  - [Features](#features)
+  - [Requirements](#requirements)
+    - [Runtime](#runtime)
+    - [Development](#development)
+  - [Install](#install)
+    - [Download](#download)
+    - [Installation](#installation)
+  - [Freqlenty asked Questions](#freqlenty-asked-questions)
+  - [Links](#links)
+  - [Contribute](#contribute)
+  - [License](#license)
+  - [Some examples, remove after creation](#some-examples-remove-after-creation)
+- [The largest heading](#the-largest-heading)
+  - [The second largest heading](#the-second-largest-heading)
+          - [The smallest heading](#the-smallest-heading)
+  - [Tables](#tables)
+  - [List](#list)
+  - [Task list](#task-list)
+  - [Colapsed section](#colapsed-section)
+      - [We can hide anything, even code!](#we-can-hide-anything-even-code)
+  - [Links](#links-1)
 
-Pyplate is a python script code generator
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## About
+
 
 ## Features
-- Generate simple python script
+
+## Requirements
+
+### Runtime
+
+### Development
 
 
-### ToDo
+## Install
+
+### Download
+
+### Installation
+
+### Configuration
+
+
+## Freqlenty asked Questions
+
+
+## History
+
+[HISTORY.md](/HISTORY.md)
+
+
+## ToDo
 - Class generation
 - Custom header
 - Project mgt
 
-### Links
+
+## Links
+
+
+## Contribute
+
+
+## License 
 
 
 ## Some examples, remove after creation

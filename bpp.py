@@ -29,7 +29,7 @@ import traceback
 import logging
 import argparse
 from datetime import datetime, date, time
-from .esc import Esc
+from esc import Esc
 
 # Settings ------------------------------------------------------------------
 
