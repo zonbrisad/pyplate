@@ -102,7 +102,11 @@ newScript() {
 																	
   echo "${PREAMBLE}"            >| ${script}
   echo "$( bpImport $HEADER )"  >> ${script}
-	bpAppend ${TEMPLATES}/$1   ${script}
+	
+	if [ -f ${TEMPLATES}/$1 ] ; then
+	  bpAppend ${TEMPLATES}/$1   ${script}
+	fi
+	
   chmod +x ${script}
 																									
   bpReplace "${script}" "__NAME__"    "${name}"
@@ -135,6 +139,9 @@ createProject() {
 
 ##N- Pyplate
 
+newm() { ##D Create minimal template
+  newScript 
+}
 
 newb() { ##D Create a new basic python program
   newScript basic.py

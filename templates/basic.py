@@ -2,14 +2,11 @@
 import sys
 import os
 import traceback
-import logging
-import argparse
-from datetime import datetime, date, time
 
 # Code ----------------------------------------------------------------------
 
 def main():
-    print("Basic")
+    print("Basic python project")
 
 
 # Main program handle 
