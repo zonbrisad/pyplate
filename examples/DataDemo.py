@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # The Python version of Qwt-5.0.0/examples/data_plot
 

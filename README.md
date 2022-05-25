@@ -2,6 +2,7 @@
 # PyPlate
 
 **Author:** Peter Malmberg <peter.malmberg@gmail.com>
+
 **License:** MIT
 
 ## Description
@@ -16,6 +17,9 @@ Pyplate is a python script code generator
 - Class generation
 - Custom header
 - Project mgt
+
+### Links
+
 
 ## Some examples, remove after creation
 
