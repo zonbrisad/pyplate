@@ -137,7 +137,7 @@ createProject() {
 
 }
 
-##N- Pyplate
+##N- Basic Templates
 
 newm() { ##D Create minimal template
   newScript 
@@ -153,11 +153,18 @@ newc() { ##D Create new cli python project with option parsing
 #  createProject "Creating new python project" ${BP_SCRIPT_PATH}/pyplate.py
 }
 
-newqt() { ## Create new QT5 python project 
+
+##C- DEV GUI Templates
+
+newqt() { ##C DEV Create new QT5 python project 
   createProject "Creating new Qt5 python project" ${BP_SCRIPT_PATH}/pyplate-qt5.py
 }
 
-##C- DEV Templated
+newgtk() { ##C DEV Create new GTK python project
+  :
+}
+
+##C- DEV Template edit
 
 eb() { ##C DEV Edit basic template
   bpEdit ${TEMPLATES}/basic.py
