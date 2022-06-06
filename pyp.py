@@ -27,11 +27,11 @@ import shutil
 
 # Settings ------------------------------------------------------------------
 
-AppName     = "pyp"
-AppVersion  = "0.1"
-AppLicence  = "MIT"
-AppAuthor   = "Peter Malmberg <peter.malmnerg@gmail.com>"
-AppInfo     = "Management script for pyplate."
+AppName = "pyp"
+AppVersion = "0.1"
+AppLicence = "MIT"
+AppAuthor = "Peter Malmberg <peter.malmnerg@gmail.com>"
+AppInfo = "Management script for pyplate."
 
 # Installation directory for pyplate
 InstallDir = "bin/pyplate"

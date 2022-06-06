@@ -145,19 +145,34 @@ newm() { ##D Create minimal template
 
 newb() { ##D Create a new basic python program
   newScript basic.py
-#  createProject "Creating new simple python project" ${BP_SCRIPT_PATH}/pyplate-basic.py
+#  createProject "Creating new simple python project" ${BP_DIR}/pyplate-basic.py
 }
 
 newc() { ##D Create new cli python project with option parsing
   newScript cli.py
-#  createProject "Creating new python project" ${BP_SCRIPT_PATH}/pyplate.py
+#  createProject "Creating new python project" ${BP_DIR}/pyplate.py
 }
 
+
+##- Header
+
+createlh() { ##D Create a local header file
+  PPL_DIR=pyplate
+  PPL_TEMPLATE_DIR=${BP_DIR}/templates
+  ppl_dir=$(pwd)/${PPL_DIR}
+
+  if [ -e ${ppl_dir} ]; then
+    return
+  fi
+
+  bpMkDir ${ppl_dir}
+  bpCp ${PPL_TEMPLATE_DIR}/header ${ppl_dir}/.
+}
 
 ##C- DEV GUI Templates
 
 newqt() { ##C DEV Create new QT5 python project 
-  createProject "Creating new Qt5 python project" ${BP_SCRIPT_PATH}/pyplate-qt5.py
+  createProject "Creating new Qt5 python project" ${BP_DIR}/pyplate-qt5.py
 }
 
 newgtk() { ##C DEV Create new GTK python project
@@ -188,7 +203,7 @@ install() { ##C DEV Install init module
 ##C- DEV Project management (git)
 
 clean() { ##C DEV Remove leftover files 
-  bpCd "${BP_SCRIPT_PATH}"
+  bpCd "${BP_DIR}"
 
   find . -name "*~"     -delete
   find . -name "*.orig" -delete
@@ -199,14 +214,14 @@ clean() { ##C DEV Remove leftover files
 }
 
 commit() { ##C DEV Commit project to repository
-  bpCd "${BP_SCRIPT_PATH}"
+  bpCd "${BP_DIR}"
   git commit -a
   #git push --tags -a
   bpCd - 
 }
 
 tag() { ##C DEV Make a new tag
-  bpCd "${BP_SCRIPT_PATH}"
+  bpCd "${BP_DIR}"
   # List existing tags
   git tag
 
@@ -220,13 +235,13 @@ tag() { ##C DEV Make a new tag
 }
 
 push() { ##C DEV Push project to GITHUB
-  bpCd "${BP_SCRIPT_PATH}"
+  bpCd "${BP_DIR}"
   git push --progress
   bpCd - 
 } 
 
 pull() { ##C DEV Pull project from GITHUB
-  bpCd "${BP_SCRIPT_PATH}"
+  bpCd "${BP_DIR}"
   git pull --progress
   bpCd - 
 } 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# -----------------------------------------------------------------------
+# --------------------------------------------------------------------------
 #
 # Python template generator
 #
@@ -11,13 +11,16 @@
 # Python:  >=3
 # Licence: MIT
 #
-# -----------------------------------------------------------------------
-# History
+# ---------------------------------------------------------------------------
+
+# History -------------------------------------------------------------------
 # - Ver 0.3
 # Major rewrite for better code generation
 #
-# Todo
+
+# Todo ----------------------------------------------------------------------
 #
+
 # Imports -------------------------------------------------------------------
 
 import sys
@@ -103,13 +106,16 @@ class template(object):
         self.arg = arg
 
     def addImport(self, imp):
+        pass
         
     def addHeader(self, header):
-        
+        pass
+
     def addSeparator(self):
-        
+        pass
+
     def write(self):
-    
+        pass
 
 
 class CFile():
@@ -573,21 +579,17 @@ def main():
     parrent_parser.add_argument("--license",  type=str,  help="License of new file",           default=conf.license)
     parrent_parser.add_argument("--author",   type=str,  help="Author of file",                default=conf.name+" <"+conf.email+">")
 
+    parrent_parser.add_argument("--header",   action="store_true",  help="External header file", default=False)
+    parrent_parser.add_argument("--name",     type=str,  help="Name of C/C++ module", default="")
+    parrent_parser.add_argument("--brief",    type=str,  help="Brief description",    default="")
+
     parrent_parser.add_argument("--dir",      type=str,  help="Project source directory", default=".")
     parrent_parser.add_argument("--basedir",  type=str,  help="Project directory", default=".")
 
-    parrent_parser.add_argument("--main",     action="store_true",  help="Include main() function into module", default=False)
-    parrent_parser.add_argument("--cpp",      action="store_true",  help="Module is a C++ file", default=False)
-    parrent_parser.add_argument("--name",     type=str,  help="Name of C/C++ module", default="")
-    parrent_parser.add_argument("--brief",    type=str,  help="Brief description",    default="")
-    parrent_parser.add_argument("--glib",     action="store_true",  help="Use glib library",     default=False)
-
-
-
     # options parsing
     parser = argparse.ArgumentParser(
-             prog=AppName+'.py',
-             description="Makeplate C/C++ template generator",
+             prog = AppName+'.py',
+             description = "Makeplate C/C++ template generator",
              epilog = "",
              parents = [parrent_parser],
              )
@@ -601,14 +603,6 @@ def main():
     parser_newclass.set_defaults(func=cmd_newclass)
     parser_newcpp = subparsers.add_parser("newcpp", parents=[parrent_parser],  help="Create a new C++ file")
     parser_newcpp.set_defaults(func=cmd_newcpp)
-#    parser_qtdia = subparsers.add_parser("qtdia",   parents=[parrent_parser],  help="Create a Qt5 dialog")
-#    parser_qtdia.set_defaults(func=cmd_qtdia)
-#    parser_qtmain = subparsers.add_parser("qtmain", parents=[parrent_parser],  help="Create a Qt5 main application")
-#    parser_qtmain.set_defaults(func=cmd_qtmain)
-#    parser_qtwin = subparsers.add_parser("qtwin",   parents=[parrent_parser],  help="Create a Qt5 main window")
-#    parser_qtwin.set_defaults(func=cmd_qtwin)
-#    parser_qtdia = subparsers.add_parser("qtdia",   parents=[parrent_parser],  help="Create a Qt5 dialog")
-#    parser_qtdia.set_defaults(func=cmd_qtdia)
     parser_qtdia = subparsers.add_parser("giti",    parents=[parrent_parser],  help="Create .gitignore file")
     parser_qtdia.set_defaults(func=cmd_giti)
 
@@ -620,16 +614,10 @@ def main():
         conf.author  = args.author
     if hasattr(args, 'license'):
         conf.license = args.license
-    if hasattr(args, 'main'):
-        conf.main = args.main
-    if hasattr(args, 'cpp'):
-        conf.isCpp = args.cpp
     if hasattr(args, 'name'):
         conf.moduleName = args.name
     if hasattr(args, 'brief'):
         conf.brief = args.brief
-    if hasattr(args, 'glib'):
-        conf.glib = args.glib
     if hasattr(args, 'basedir'):
         conf.basedir = args.basedir
 
