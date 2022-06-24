@@ -576,22 +576,22 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     parrent_parser = argparse.ArgumentParser(add_help=False)
-    parrent_parser.add_argument("--license",  type=str,  help="License of new file",           default=conf.license)
-    parrent_parser.add_argument("--author",   type=str,  help="Author of file",                default=conf.name+" <"+conf.email+">")
+    parrent_parser.add_argument("--license", type=str, help="License of new file", default=conf.license)
+    parrent_parser.add_argument("--author", type=str, help="Author of file", default=conf.name+" <"+conf.email+">")
 
-    parrent_parser.add_argument("--header",   action="store_true",  help="External header file", default=False)
-    parrent_parser.add_argument("--name",     type=str,  help="Name of C/C++ module", default="")
-    parrent_parser.add_argument("--brief",    type=str,  help="Brief description",    default="")
+    parrent_parser.add_argument("--header", action="store_true", help="External header file", default=False)
+    parrent_parser.add_argument("--name", type=str, help="Name of C/C++ module", default="")
+    parrent_parser.add_argument("--brief", type=str, help="Brief description", default="")
 
-    parrent_parser.add_argument("--dir",      type=str,  help="Project source directory", default=".")
-    parrent_parser.add_argument("--basedir",  type=str,  help="Project directory", default=".")
+    parrent_parser.add_argument("--dir", type=str, help="Project source directory", default=".")
+    parrent_parser.add_argument("--basedir", type=str, help="Project directory", default=".")
 
     # options parsing
     parser = argparse.ArgumentParser(
-             prog = AppName+'.py',
-             description = "Makeplate C/C++ template generator",
-             epilog = "",
-             parents = [parrent_parser],
+             prog=AppName+".py",
+             description="Makeplate C/C++ template generator",
+             epilog="",
+             parents=[parrent_parser],
              )
 
     parser.add_argument("--version",  action='version',  help="Directory where to store file", version=AppVersion)
@@ -659,7 +659,7 @@ def query_yn(question, default="yes"):
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
-        if default is not None and choice == '':
+        if default is not None and choice == "":
             return valid[default]
         elif choice in valid:
             return valid[choice]

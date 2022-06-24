@@ -24,9 +24,9 @@
 #
 #
 
-class Esc():
-    # ANSI foreground colors codes
-    #
+class Esc:
+    """ ANSI foreground colors codes """
+    
     BLACK = "\033[0;30m"        # Black
     RED = "\033[0;31m"          # Red
     GREEN = '\033[0;32m'        # Green

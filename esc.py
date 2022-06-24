@@ -11,22 +11,12 @@
 # Python:  3
 #
 #----------------------------------------------------------------------------
-# Pyplate
-#   This file is generated from pyplate Python template generator.
-#
-# Pyplate is developed by:
-#   Peter Malmberg <peter.malmberg@gmail.com>
-#
-# Available at:
-#   https://github.com/zobrisad/pyplate.git
-#
-# ---------------------------------------------------------------------------
-#
-#
 
-class Esc():
-    # ANSI foreground colors codes
-    #
+
+class Esc:
+    
+    """ ANSI foreground colors codes """
+    
     BLACK = "\033[0;30m"        # Black
     RED = "\033[0;31m"          # Red
     GREEN = '\033[0;32m'        # Green

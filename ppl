@@ -57,6 +57,9 @@ bpUserSettings() {
 	TEMPLATES=${BP_DIR}/templates
 	HEADER=${TEMPLATES}/header
 
+#  PPL_TEMPLATE_DIR=${BP_DIR}/templates
+  PPL_DIR=$(pwd)/pyplate
+  PPL_SETTINGS=${PPL_DIR}/pyplate.conf
 }
 #---------------------------------------------------------------------
 # User defined functions
@@ -119,54 +122,114 @@ newScript() {
 }
 
 
-createProject() {
-  echo -e ${1}
+# createProject() {
+#   echo -e ${1}
   
-  pn=$(bpRead "Project name")
-  desc=$(bpRead "Enter script description")
-  author=$(bpRead "Project author" "${BP_NAME} <${BP_EMAIL}>" )
+#   pn=$(bpRead "Project name")
+#   desc=$(bpRead "Enter script description")
+#   author=$(bpRead "Project author" "${BP_NAME} <${BP_EMAIL}>" )
 
-  bpCp "${2}" ./${pn}.py
+#   bpCp "${2}" ./${pn}.py
   
-  bpReplace ./${pn}.py "__NAME__"    "${pn}"
-  bpReplace ./${pn}.py "__DATE__"    "${BP_DATE}"
-  bpReplace ./${pn}.py "__LICENSE__" "${BP_LICENSE}"
-  bpReplace ./${pn}.py "__AUTHOR__"  "${author}"
-  bpReplace ./${pn}.py "__DESC__"    "${desc}"
-  bpReplace ./${pn}.py "__ORG__"     "${BP_ORG}"
-
-}
+#   bpReplace ./${pn}.py "__NAME__"    "${pn}"
+#   bpReplace ./${pn}.py "__DATE__"    "${BP_DATE}"
+#   bpReplace ./${pn}.py "__LICENSE__" "${BP_LICENSE}"
+#   bpReplace ./${pn}.py "__AUTHOR__"  "${author}"
+#   bpReplace ./${pn}.py "__DESC__"    "${desc}"
+#   bpReplace ./${pn}.py "__ORG__"     "${BP_ORG}"
+# }
 
 ##N- Basic Templates
 
-newm() { ##D Create minimal template
-  newScript 
+new() { ##D Create new python file
+  #set -o xtrace
+  if hasSettings; then
+    source ${PPL_SETTINGS}
+    ppltemplate.py new --header ${PPL_DIR}/header.txt --author "${PPL_NAME}" --email "${PPL_EMAIL}"
+    return 0
+  fi
+
+  if [ -n BP_NAME ]; then
+    ppltemplate.py new --author "${BP_NAME}" --email "${BP_EMAIL}"
+    return 0
+  fi
+
+  ppltemplate.py new ${ARGS} 
 }
 
-newb() { ##D Create a new basic python program
-  newScript basic.py
-#  createProject "Creating new simple python project" ${BP_DIR}/pyplate-basic.py
+newa() { ##D Create new terminal application
+  if hasSettings; then
+    source ${PPL_SETTINGS}
+    ppltemplate.py newa ${ARGS} --header ${PPL_DIR}/header.txt --author "${PPL_NAME}" --email "${PPL_EMAIL}"
+  else
+    ppltemplate.py newa ${ARGS} 
+  fi
 }
 
-newc() { ##D Create new cli python project with option parsing
-  newScript cli.py
-#  createProject "Creating new python project" ${BP_DIR}/pyplate.py
+newm() { ##D Create new minimal python file
+  if hasSettings; then
+    source ${PPL_SETTINGS}
+    ppltemplate.py newm ${ARGS} --header ${PPL_DIR}/header.txt --author "${PPL_NAME}" --email "${PPL_EMAIL}"
+  else
+    ppltemplate.py newm ${ARGS} 
+  fi
 }
-
 
 ##- Header
+hasSettings() {
+  if [ -d ${PPL_DIR} ]; then
+    return 0
+  else
+    return 1
+  fi
+}
 
-createlh() { ##D Create a local header file
-  PPL_DIR=pyplate
-  PPL_TEMPLATE_DIR=${BP_DIR}/templates
-  ppl_dir=$(pwd)/${PPL_DIR}
+bpVarExist() {
+  if [ -n "$1" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
 
-  if [ -e ${ppl_dir} ]; then
+bpDefault() { ##D 
+  if bpVarExist "$1"; then
+    return $$1
+  fi
+}
+
+cls() { ##D Create a local settings 
+
+  if hasSettings ; then
+    bpInfo "Settings already exists"
     return
   fi
 
-  bpMkDir ${ppl_dir}
-  bpCp ${PPL_TEMPLATE_DIR}/header ${ppl_dir}/.
+  if ! bpMkDir ${PPL_DIR}; then
+    bpError "Failed to create local pyplate settings"
+    return
+  fi
+
+  ppltemplate.py --printheader >| ${PPL_DIR}/header.txt
+
+  # If Bashplate settings are avalable use as default values
+  if [ -n "BP_NAME" ]; then
+    DEFAULT_NAME="${BP_NAME}"
+  else
+    DEFAULT_NAME=""
+  fi
+  
+  if bpVarExist "BP_EMAIL"; then
+    DEFAULT_EMAIL="${BP_EMAIL}"
+  else
+    DEFAULT_EMAIL=""
+  fi
+
+  bpAddSetting  $PPL_SETTINGS "PPL_NAME" "$(bpRead "Enter name" "${DEFAULT_NAME}" ) " "Name of creator"
+  bpAddSetting  $PPL_SETTINGS "PPL_EMAIL" "$(bpRead "Enter email" "${DEFAULT_EMAIL}" )" "Email of creator"
+  bpAddSetting  $PPL_SETTINGS "PPL_PROJECT" "$(bpRead "Enter project name")" "Project name"
+  bpAddSetting  $PPL_SETTINGS "PPL_DESCRIPTION" "$(bpRead "Enter project description")" "Project description"
+  bpAddSetting  $PPL_SETTINGS "PPL_LICENSE" "$(bpRead "Enter license")" "Default license"
 }
 
 ##C- DEV GUI Templates
@@ -734,13 +797,17 @@ bpRemoveLineContaining() { ##I Remove line in file if it contains given string
 #
 # $1 file
 # $2 string
-# return 1 for true, 0 for false
+# return true if existing 
 #
 bpStrExist() { ##I Check if string exist in file  
+  if [ ! -f $1 ]; then
+    return 1
+  fi
+
   if grep -q -F "$2" "$1" ; then
-    echo "1"
+    return 0
   else
-    echo "0"
+    return 1
   fi
 }
 
@@ -887,12 +954,19 @@ bpReadN() { ##I Ask yes/no question default no
 
 ##C- BP_CONF Bashplate settings
 
+#
+# arg1 config file
+# arg2 setting name
+# arg3 setting value
+# arg4 setting description
+#
 bpAddSetting() { 
 
   # Check if setting exist in file
-  S=$(bpStrExist "${1}" "${2}" )
+  #S=$(bpStrExist "${1}" "${2}" )
 
-  if [ "${S}" == "0" ]; then
+  #if [ "${S}" == "0" ]; then
+  if ! bpStrExist "${1}" "${2}"; then
     {
       echo "# ${4}" 
       echo "${2}=\"${3}\"" 
@@ -1525,6 +1599,28 @@ bpLoadSettings
 if [ -n "$PRE_SCRIPT_HOOK" ]; then
   ${PRE_SCRIPT_HOOK} "$@"
 fi
+
+#xx() {
+
+# OPTS=$(getopt --longoptions idebug -- "$@")
+# echo $OPTS
+# eval set --$OPTS
+
+# while true; do
+#   case "$1" in
+#     --idebug)
+#       set -o xtrace
+#         ;;
+#     --)
+#         shift
+#         break
+#         ;;
+#     esac
+#     shift
+# done
+#}
+#echo $@
+#xx
 
 # Run command parser
 bpRunCommand "$@"
