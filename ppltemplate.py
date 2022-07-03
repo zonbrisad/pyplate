@@ -9,7 +9,7 @@
 # Date:    2016-02-19
 # Version: 0.3
 # Python:  >=3
-# Licence: MIT
+# License: MIT
 #
 # ---------------------------------------------------------------------------
 
@@ -40,25 +40,13 @@ AppVersion = "0.3"
 AppLicense = "MIT"
 AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
 
+
 # Uncomment to use logfile
 # LogFile     = "pyplate.log"
 
 # Absolute path to script itself
 scriptPath = os.path.abspath(os.path.dirname(sys.argv[0]))
-mpPath = scriptPath+"/.."
-
-# src_header_alt = """\"\"\"
-
-#   __BRIEF__
-
-#   File:     __NAME__
-#   Author:   __AUTHOR__ __EMAIL__
-#   Date:     __DATE__
-#   License:  __LICENSE__
-#   Python:   >= 3.0
-
-# \"\"\"
-# """
+mpPath = scriptPath + "/.."
 
 
 # Code ----------------------------------------------------------------------
@@ -90,7 +78,7 @@ class TConf:
     """Template configuration class"""
     name: str = ""
     author: str = ""
-    brief: str = ""
+    description: str = ""
     date: str = ""
     email: str = ""
     license: str = ""
@@ -107,9 +95,10 @@ class TConf:
         self.args = args
         self.date = datetime.now().strftime("%Y-%m-%d")
         self.has_main = self.args.main
+        self.has_separators = self.args.separators
 
         self.set_attribute("name", "Enter module name")
-        self.set_attribute("brief", "Enter brief description")
+        self.set_attribute("description", "Enter brief description")
         self.set_attribute("author", "Enter name of author")
         self.set_attribute("email", "Enter email of author")
 
@@ -126,38 +115,6 @@ class TConf:
             setattr(self, attribute, getattr(self.args, attribute))
         else:
             setattr(self, attribute, query.query_string(question, ""))
-
-
-# class TArgTable(TOption):
-#     import_text = """\
-# import argparse
-# """
-#     main_text = """\
-#     parrent_parser = argparse.ArgumentParser(add_help=False)
-#     parrent_parser.add_argument("--name", type=str,
-#                                 help="Name of Python module", default="")
-#     parrent_parser.add_argument("--brief", type=str,
-#                                 help="Brief description", default="")
-#     parrent_parser.add_argument("--main", action="store_true",
-#                                 help="Add main function block",
-#                                 default=False)
-#     parrent_parser.add_argument("--header", action="store_true",
-#                                 help="Include header", default=False)
-#     parser.add_argument("--version", action='version',
-#                         help="Directory where to store file",
-#                         version=AppVersion)
-
-#     # options parsing
-#     parser = argparse.ArgumentParser(
-#             prog=AppName+".py",
-#             description="Pyplate python template generator",
-#             epilog="",
-#             parents=[parrent_parser],
-#         )
-
-#     args = parser.parse_args()
-#     parser.print_help()
-# """
 
 
 t_preamble = TemplateX(
@@ -184,10 +141,6 @@ t_header = TemplateX(
 )
 
 t_main = TemplateX(
-    main_func_text="""
-def main():
-    pass
-""",
     main_text="""\
 if __name__ == "__main__":
     main()
@@ -196,16 +149,11 @@ if __name__ == "__main__":
 
 t_main_application = TemplateX(
     imports_text="""\
-from traceback import print_exc
-from os import _exit
-from sys import exit
-""",
-    main_func_text="""
-def main():
-    pass
+import traceback
+import os
+import sys
 """,
     main_text="""\
-
 if __name__ == "__main__":
     try:
         main()
@@ -222,46 +170,71 @@ if __name__ == "__main__":
 """
 )
 
-
 t_application = TemplateX(
     variables_text="""\
 app_name = "__NAME__"
-app_version = ""
-app_license = ""
-app_author = "__AUTHOR__  <__EMAIL__>"
+app_version = "0.1"
+app_license = "X"
+app_author = "__AUTHOR__  __EMAIL__"
 app_description = "__DESCRIPTION__"
 """
 )
-
 
 t_argtable = TemplateX(
     imports_text="""\
 import argparse
 """,
-    main_text="""\
-    parrent_parser = argparse.ArgumentParser(add_help=False)
-    parrent_parser.add_argument("--name", type=str,
-                                help="Name of Python module", default="")
-    parrent_parser.add_argument("--brief", type=str,
-                                help="Brief description", default="")
-    parrent_parser.add_argument("--main", action="store_true",
-                                help="Add main function block", default=False)
-    parrent_parser.add_argument("--header", action="store_true",
-                                help="Include header", default=False)
-    parser.add_argument("--version", action='version',
-                        help="Directory where to store file",
-                        version=app_version)
-
-    # options parsing
+    main_func_text="""\
     parser = argparse.ArgumentParser(
-            prog=app_name,
-            description=app_description,
-            epilog="",
-            parents=[parrent_parser],
-        )
+        prog=app_name,
+        description=app_description,
+        epilog="",
+        add_help=True)
+    parser.add_argument("--name",
+                        type=str,
+                        help="Name of Python module",
+                        default="")
+    parser.add_argument("--brief",
+                        type=str,
+                        help="Brief description",
+                        default="")
+    parser.add_argument("--main",
+                        action="store_true",
+                        help="Add main function block",
+                        default=False)
+    parser.add_argument("--header",
+                        action="store_true",
+                        help="Include header",
+                        default=False)
+    parser.add_argument("--version",
+                        action="version",
+                        help="Print version information",
+                        version=f"{app_name} {app_version}")
+
 
     args = parser.parse_args()
     parser.print_help()
+"""
+)
+
+
+t_logging = TemplateX(
+    imports_text="""\
+import logging
+""",
+    main_func_text="""\
+    logging.basicConfig
+"""
+)
+
+
+t_qt5 = TemplateX(
+    imports_text="""\
+from Qt5 import
+""",
+    variables_text="""
+""",
+    main_func_text="""
 """
 )
 
@@ -279,6 +252,12 @@ class Template(TemplateX):
     def replace(self, old: str, new: str):
         self.text = self.text.replace(old, new)
 
+    def add_separator(self, header):
+        if self.conf.has_separators:
+            self.text += f"\n# {header} {'-'*(75-len(header))}\n\n\n"
+        # else:
+        #     self.text += "\n\n"
+
     def generate(self):
         self.clear()
 
@@ -290,19 +269,28 @@ class Template(TemplateX):
 
         if self.conf.has_main_application:
             self.add(t_main_application)
-
         elif self.conf.has_main:
             self.add(t_main)
 
         self.text += self.preamble_text
         self.text += self.header_text
+        self.add_separator("Imports")
         self.text += self.imports_text
-        self.text += self.main_func_text
-        self.text += "\n\n"
-        self.text += self.main_text
+        self.add_separator("Variables")
+        self.text += self.variables_text
+        self.add_separator("Code")
+
+        if self.conf.has_main or self.conf.has_main_application:
+            self.text += "def main():\n"
+            if self.main_func_text == "":
+                self.text += "    pass"
+            else:
+                self.text += self.main_func_text
+            self.text += "\n\n"
+            self.text += self.main_text
 
         self.replace("__NAME__", self.conf.name)
-        self.replace("__BRIEF__", self.conf.brief)
+        self.replace("__DESCRIPTION__", self.conf.description)
         self.replace("__AUTHOR__", self.conf.author)
 
         if self.conf.email == "":
@@ -334,20 +322,24 @@ def cmd_new(args):
 
     t = Template(conf)
     t.generate()
-    # print(t)
+    #print(t)
     t.write()
 
 
 def cmd_newa(args):
     conf = TConf(args)
-    conf.has_main = True
+    conf.has_main = False
     conf.has_main_application = True
-    # conf.has_
+    conf.has_separators = True
 
     t = Template(conf)
+    t.add(t_application)
+    if query.query_bool("Include argparse?", default="yes"):
+        t.add(t_argtable)
     t.generate()
-    print(t)
-    # t.write()
+    t.write()
+    if args.debug:
+        print(t)
 
 
 def cmd_newm(args):
@@ -357,19 +349,20 @@ def cmd_newm(args):
 
     t = Template(conf)
     t.generate()
-    print(t)
+    t.write()
 
 
 def main() -> None:
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s]%(asctime)s %(message)s")
+    # logging.debug("Hello")
 
     parrent_parser = argparse.ArgumentParser(add_help=False)
     parrent_parser.add_argument("--name",
                                 type=str,
                                 help="Name of Python module"
                                 )
-    parrent_parser.add_argument("--brief",
+    parrent_parser.add_argument("--description",
                                 type=str,
                                 help="Brief description"
                                 )
@@ -410,19 +403,26 @@ def main() -> None:
                                 action="store_true",
                                 help="Print default header to stdout",
                                 default=False)
+    parrent_parser.add_argument("--separators",
+                                action="store_true",
+                                help="Add code separators",
+                                default=False)
 #    parrent_parser.add_argument("--outfile",
 #                                type=argparse.FileType("w",0),
 #                                help="Write template to file")
+    parrent_parser.add_argument("--debug",
+                                action="store_true",
+                                help="Print debug information")
     parrent_parser.add_argument("--version",
                                 action="version",
-                                help="Application version",
+                                help="Print application version",
                                 version=AppVersion)
 
     # options parsing
     parser = argparse.ArgumentParser(
             prog=AppName,
             description="Pyplate python template generator",
-            epilog="\n\n",
+            epilog="Pyplate <https://github.com/zonbrisad/pyplate.git>",
             parents=[parrent_parser],
         )
 
@@ -441,8 +441,6 @@ def main() -> None:
     parser_new.set_defaults(func=cmd_newa)
 
     args = parser.parse_args()
-
-    # conf = TConf(args)
 
     if hasattr(args, "func"):
         args.func(args)

@@ -2,7 +2,7 @@
 # Pyplate template generator
 # ----------------------------------------------------------------------------
 #
-# __BRIEF__
+# __DESCRIPTION__
 #
 # File:     __NAME__
 # Author:   __AUTHOR__  __EMAIL__
