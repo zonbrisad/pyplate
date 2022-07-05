@@ -26,27 +26,27 @@
 
 # Imports -------------------------------------------------------------------
 
-import sys
-import os
-import traceback
-import logging
 import argparse
-from datetime import datetime, date, time
-
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+import logging
+import os
+import sys
+import traceback
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow, QWidget
+
+# from datetime import datetime, date, time
 
 # Settings ------------------------------------------------------------------
 
 # Application settings
-AppName     = "QTextEdit"
-AppVersion  = "0.1"
-AppLicense  = ""
-AppAuthor   = "Peter Malmberg <peter.malmber@gmail.com>"
-AppDesc     = "An example of QTextEdit widget features"
+AppName = "QTextEdit"
+AppVersion = "0.1"
+AppLicense = ""
+AppAuthor = "Peter Malmberg <peter.malmber@gmail.com>"
+AppDesc = "An example of QTextEdit widget features"
 
 # Qt settings
 WindowTitle = AppName
@@ -54,11 +54,11 @@ WindowXSize = 800
 WindowYSize = 400
 
 # Time to show message in ms
-MsgTime     = 2000
+MsgTime = 2000
 
 # Code ----------------------------------------------------------------------
 
-aboutHtml='''
+aboutHtml = '''
 <h3>About '''+AppName+'''</h3>
 <br>
 <b>Version: </b> '''+AppVersion+'''
@@ -68,7 +68,7 @@ aboutHtml='''
 '''+AppDesc+'''
 '''
 
-htmlTable='''
+htmlTable = '''
 <table style="width:100%">
 <tr>
 <th>Firstname</th>
@@ -88,7 +88,7 @@ htmlTable='''
 </table>
 '''
 
-htmlBlock='''
+htmlBlock = '''
 <div style="background-color:Silver;color:Green;padding:30px;">
 <h2>London</h2>
 <p>London is the capital city of England. It is the most populous city in the United Kingdom, with a metropolitan area of over$
@@ -96,7 +96,7 @@ htmlBlock='''
 </div> 
 '''
 
-htmlList='''
+htmlList = '''
 <ol>  
 <li>Coffee</li> 
 <li>Tea</li>  
@@ -104,12 +104,12 @@ htmlList='''
 </ol>
 '''
       
-htmlStyle='''
+htmlStyle = '''
 <h2 style="background-color:blue;color:white">
 Background-color set by using blue
 </h2>'''
 
-htmlColors='''
+htmlColors = '''
 <br>
 <h2>Standard colors</h2><br>
 <font color="White">White<br>
@@ -259,62 +259,64 @@ htmlColors='''
 <font color="Navy">Navy<br>
 <font color="MidnightBlue">MidnightBlue<br>
 '''
-purpleColors=[
-'Purple, violet, and magenta colors',
-'Lavender',
-'Thistle',
-'Plum',
-'Violet',
-'Orchid',
-'Fuchsia',
-'Magenta',
-'MediumOrchid',
-'MediumPurple',
-'BlueViolet',
-'DarkViolet',
-'DarkOrchid',
-'DarkMagenta',
-'Purple',
-'Indigo',
-'DarkSlateBlue',
-'SlateBlue',
-'MediumSlateBlue'
-]
-whiteColors=[
-'White colors',
-'White',
-'Snow,'
-'Honeydew',
-'MintCream',
-'Azure',
-'AliceBlue',
-'GhostWhite',
-'WhiteSmoke',
-'Seashell',
-'Beige',
-'OldLace',
-'FloralWhite',
-'Ivory',
-'AntiqueWhite',
-'Linen',
-'LavenderBlush',
-'MistyRose'
-]
-grayColors=[
-'Gray and black colors',
-'Gainsboro',
-'LightGray',
-'Silver',
-'DarkGray',
-'Gray',
-'DimGray',
-'LightSlateGray',
-'SlateGray',
-'DarkSlateGray',
-'Black',
+purpleColors = [
+    'Purple, violet, and magenta colors',
+    'Lavender',
+    'Thistle',
+    'Plum',
+    'Violet',
+    'Orchid',
+    'Fuchsia',
+    'Magenta',
+    'MediumOrchid',
+    'MediumPurple',
+    'BlueViolet',
+    'DarkViolet',
+    'DarkOrchid',
+    'DarkMagenta',
+    'Purple',
+    'Indigo',
+    'DarkSlateBlue',
+    'SlateBlue',
+    'MediumSlateBlue'
 ]
 
+whiteColors = [
+    'White colors',
+    'White',
+    'Snow,'
+    'Honeydew',
+    'MintCream',
+    'Azure',
+    'AliceBlue',
+    'GhostWhite',
+    'WhiteSmoke',
+    'Seashell',
+    'Beige',
+    'OldLace',
+    'FloralWhite',
+    'Ivory',
+    'AntiqueWhite',
+    'Linen',
+    'LavenderBlush',
+    'MistyRose'
+]
+ 
+grayColors = [
+    'Gray and black colors',
+    'Gainsboro',
+    'LightGray',
+    'Silver',
+    'DarkGray',
+    'Gray',
+    'DimGray',
+    'LightSlateGray',
+    'SlateGray',
+    'DarkSlateGray',
+    'Black',
+]
 
+ 
 def color2html(col):
     str = ''
     for x in col:
@@ -326,8 +328,8 @@ def color2html(col):
 
     return str
 
-
-htmlFonts='''
+  
+htmlFonts = '''\
 <br>
 <font color="Black">
 Normal<br>
@@ -342,7 +344,7 @@ Normal<br>
 <a href="www.svd.se">Svenska Dagbladet</a>
 '''
 
-htmlCss='''
+htmlCss = '''\
 h1 {
 color: white;
 }
@@ -365,14 +367,14 @@ class AboutDialog(QDialog):
 
         self.setWindowTitle("About " + AppName)
         self.setWindowModality(Qt.ApplicationModal)
-        
+
         # Set dialog size. 
         self.resize(400, 300)
-                                
+
         self.verticalLayout = QtWidgets.QVBoxLayout(self)
         self.verticalLayout.setSpacing(2)
-        #horizontalLayout.addLayout(self.verticalLayout)
-        
+        # horizontalLayout.addLayout(self.verticalLayout)
+
         self.mainLayout = QtWidgets.QHBoxLayout()
         self.mainLayout.setContentsMargins(2, 2, 2, 2)
         self.mainLayout.setSpacing(2)
@@ -382,7 +384,7 @@ class AboutDialog(QDialog):
         self.buttonLayout.setSpacing(2)
 
         self.setLayout(self.verticalLayout)
-                
+
         # TextEdit
         self.textEdit = QtWidgets.QTextEdit(self)
         self.textEdit.setReadOnly(True)
@@ -395,36 +397,36 @@ class AboutDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.verticalLayout.addWidget(self.buttonBox)
-        
+
         self.textEdit.insertHtml(aboutHtml)
-        
+
     @staticmethod
     def about(parent = None):
         dialog = AboutDialog(parent)
         result = dialog.exec_()
         return (result == QDialog.Accepted)
 
-    
+
 class MainForm(QMainWindow):
     def __init__(self, parent=None):
         super(MainForm, self).__init__(parent)
-        
+
         # Set window size. 
         self.resize(WindowXSize, WindowYSize)
- 
+
         # Set window title  
         self.setWindowTitle(WindowTitle) 
-        
+
 #        self.resize(self.sizeHint())
-        
+
         # Create central widget
         self.centralwidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralwidget)
-                
+
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.horizontalLayout.setSpacing(2)
-         
+
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(2)
         self.horizontalLayout.addLayout(self.verticalLayout)
@@ -433,12 +435,12 @@ class MainForm(QMainWindow):
         self.pbExit = QtWidgets.QPushButton("Exit", self.centralwidget)
         self.pbExit.pressed.connect(self.appExit)
         self.verticalLayout.addWidget(self.pbExit)
-        
+
         # Button html colors
         self.pb1 = QtWidgets.QPushButton("HTML colors", self.centralwidget)
         self.pb1.pressed.connect(self.htmlColors)
         self.verticalLayout.addWidget(self.pb1)
-        
+
         # Button html font
         self.pb2 = QtWidgets.QPushButton("HTML fonts", self.centralwidget)
         self.pb2.pressed.connect(self.htmlFonts)
@@ -453,16 +455,19 @@ class MainForm(QMainWindow):
         self.pb4 = QtWidgets.QPushButton("HTML block", self.centralwidget)
         self.pb4.pressed.connect(self.htmlBlock)
         self.verticalLayout.addWidget(self.pb4)
-        
+         
         # Button html list
         self.pb5 = QtWidgets.QPushButton("HTML list", self.centralwidget)
         self.pb5.pressed.connect(self.htmlList)
         self.verticalLayout.addWidget(self.pb5)
-        
+         
         # Spacer
-        self.spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40,
+            QtWidgets.QSizePolicy.Minimum,
+            QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(self.spacerItem1)
-        
+         
         # TextEdit
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.horizontalLayout.addWidget(self.textEdit)
@@ -472,128 +477,103 @@ class MainForm(QMainWindow):
         self.statusbar.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
-
+ 
         # Menubar
         self.menubar = QtWidgets.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 855, 25))
         self.setMenuBar(self.menubar)
         
         # Menus
-        self.menuFile   = QtWidgets.QMenu("File",   self.menubar)
+        self.menuFile = QtWidgets.QMenu("File", self.menubar)
         self.menubar.addAction(self.menuFile.menuAction())
 
-        self.menuHelp   = QtWidgets.QMenu("Help",   self.menubar)
+        self.menuHelp = QtWidgets.QMenu("Help",   self.menubar)
         self.menubar.addAction(self.menuHelp.menuAction())
 
-        self.actionQuit = QtWidgets.QAction("Quit",  self ) 
+        self.actionQuit = QtWidgets.QAction("Quit", self)
         self.actionQuit.setStatusTip('Quit application')
         self.actionQuit.setShortcut('Ctrl+Q')
         self.actionQuit.triggered.connect(self.appExit)
         self.menuFile.addAction(self.actionQuit)
-        
-        
-        self.actionAbout = QtWidgets.QAction("About", self )
+
+        self.actionAbout = QtWidgets.QAction("About", self)
         self.actionAbout.triggered.connect(self.about)
         self.menuHelp.addAction(self.actionAbout)
 
-    def htmlColors(self):
-        self.textEdit.insertHtml(htmlColors)
-        
-        self.textEdit.insertHtml(color2html(purpleColors))
-        self.textEdit.insertHtml(color2html(grayColors))
-        self.textEdit.insertHtml(color2html(whiteColors))
-        self.scrollDown()
-        
-    def htmlFonts(self):    
-        self.textEdit.insertHtml(htmlFonts)
-        self.scrollDown()
-
-    def htmlTable(self):    
-        self.textEdit.insertHtml(htmlTable)
-        self.scrollDown()
-
-    def htmlBlock(self):    
-        self.textEdit.insertHtml(htmlBlock)
-        self.scrollDown()
-        
-    def htmlList(self):    
-        self.textEdit.insertHtml(htmlList)
-        self.scrollDown()
-
-        
-        
-    def append(self, str):    
-        self.textEdit.append(str)
-        self.scrollDown()
-        
-    def message(self, msg):    
-        self.statusbar.showMessage(msg, MsgTime)
-        
     def scrollDown(self):
-        return
         vsb = self.textEdit.verticalScrollBar()
         vsb.setValue(vsb.maximum())
+
+    def addHtml(self, text):
+        self.textEdit.insertHtml(text)
+        self.scrollDown()
+
+    def htmlColors(self):
+        self.addHtml(htmlColors)
+        self.addHtml(color2html(purpleColors))
+        self.addHtml(color2html(grayColors))
+        self.addHtml(color2html(whiteColors))
+        
+    def htmlFonts(self):    
+        self.addHtml(htmlFonts) 
+
+    def htmlTable(self):    
+        self.addHtml(htmlTable)
+
+    def htmlBlock(self):    
+        self.addHtml(htmlBlock)
+        
+    def htmlList(self):    
+        self.addHtml(htmlList)
+        
+    def append(self, str):    
+        self.addHtml(str)
+        
+    def message(self, msg):    
+        self.statusbar.showMessage(msg, MsgTime) 
             
-    def appExit(self):
-        self.close()
-    
+    def appExit(self): 
+        self.close()  
+     
     def msgBox(self):
         msg = QMessageBox()
-        #msg.setIcon(QMessageBox.Information)
+        # msg.setIcon(QMessageBox.Information)
         msg.setText("This is a message box")
         msg.setInformativeText("This is additional information")
         msg.setWindowTitle("MessageBox demo")
         msg.setDetailedText("The details are as follows:")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         msg.buttonClicked.connect(self.msgBoxOk)
-        
+
         retval = msg.exec_()
         print("value of pressed message box button:", retval)
-        
+
     def msgBoxOk(self):
         self.message("XXX")
-     
-    def about(self):  
+
+    def about(self):
         AboutDialog.about()
-        
+
+
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
     # options parsing
-    parser = argparse.ArgumentParser(prog=AppName, add_help = True, description=AppDesc)
+    parser = argparse.ArgumentParser(prog=AppName, add_help=True, description=AppDesc)
     parser.add_argument('--version', action='version', version='%(prog)s '+AppVersion)
     parser.add_argument("--info",  action="store_true", help="Information about script")
 
-    # Some examples of parameters (rename or remove unwanted parameters)
-    parser.add_argument("-a",    action="store_true",       help="Boolean type argument")
-    parser.add_argument("-b",    action="store",  type=str, help="String type argument",  default="HejHopp")
-    parser.add_argument("-c",    action="store",  type=int, help="Integer type argument", default=42)
-    parser.add_argument("-d",    action="append", type=int, help="Append values to list", dest='dlist', default=[] )
-    
     args = parser.parse_args()
 
     if args.info:
         printInfo()
         return
-    
-#    if args.a:
-#        print("Boolean argument")
-        
-#    if args.b:
-#        print("String argument = " + args.b)
-            
-#    if args.c:
-#        print("Integer argument = " + str(args.c) )
-
-#    if args.dlist:
-#        print("List = ", args.dlist )
-        
         
     app = QApplication(sys.argv)
     mainForm = MainForm()
     mainForm.show()
     sys.exit(app.exec_())                   
-
+ 
 # Absolute path to script itself        
 scriptPath = os.path.abspath(os.path.dirname(sys.argv[0]))
 
@@ -611,5 +591,3 @@ if __name__ == "__main__":
         print(str(e))
         traceback.print_exc()
         os._exit(1)
-                
-

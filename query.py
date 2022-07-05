@@ -92,7 +92,6 @@ class Query:
 
         while True:
             choice = "aa"
-            #while not choice.isnumeric():
             while True:
                 sys.stdout.write(f"{question} {prompt}")
                 choice = input().lower()
