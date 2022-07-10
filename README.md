@@ -76,3 +76,16 @@
 
 MIT
 
+```mermaid
+  flowchart 
+    S[Start] --> A;
+    A[Do something] --> B{Choose?}
+    B --> |No| C[Ha Ha]
+    B --> |YES| D[Ho Ho]
+    C --> E[Joining]
+    D --> E
+    E --> F{Another choise}
+    F --> |Yes| G[Ending]
+    F --> |No| A
+```
+

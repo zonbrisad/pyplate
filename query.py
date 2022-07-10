@@ -14,6 +14,7 @@
 # ----------------------------------------------------------------------------
 
 from __future__ import annotations
+
 import sys
 from enum import Enum
 
@@ -50,7 +51,7 @@ class Query:
             pass
 
     @staticmethod
-    def read_string(question, default=None) -> str:
+    def read_string(question: str, default=None) -> str:
         """Retrieve string input from user
 
         Args:

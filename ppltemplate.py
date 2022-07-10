@@ -26,14 +26,18 @@
 from __future__ import annotations
 
 import argparse
-import logging
+import json
 import os
 import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
+from typing import List
 
-import query
+from git import Repo
+
+from bashplates import Bp
+from query import Query
 
 # Settings ------------------------------------------------------------------
 
@@ -42,13 +46,12 @@ AppVersion = "0.3"
 AppLicense = "MIT"
 AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
 
-# Uncomment to use logfile
-# LogFile     = "pyplate.log"
 
 # Absolute path to script itself
-scriptPath = os.path.abspath(os.path.dirname(sys.argv[0]))
-mpPath = scriptPath + "/.."
+self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+template_dir = f"{self_dir}/pyplate"
 
+readme_md = f"{template_dir}/README.md"
 
 # Code ----------------------------------------------------------------------
 
@@ -64,12 +67,14 @@ class TemplateX:
     main_func_text: str = ""
     main_text: str = ""
 
+    dependecies: List[TemplateX] = []
+
     def add(self, a: TemplateX):
         self.preamble_text += a.preamble_text
         self.header_text += a.header_text
         self.imports_text += a.imports_text
         self.variables_text += a.variables_text
-        # if self.code_text != "": 
+        # if self.code_text != "":
         #    self.code_text += a.code_text + "\n\n"
         self.code_text += a.code_text
         self.main_func_text += a.main_func_text
@@ -86,24 +91,35 @@ class TConf:
     email: str = ""
     license: str = ""
     org: str = ""
-    # header: str = ""
+    project: str = ""
+
+    out_dir: str = ""
 
     has_preamble: bool = True
     has_header: bool = True
     has_main: bool = False
     has_main_application: bool = False
     has_separators: bool = False
+    has_project: bool = False
+    has_directory: bool = False
+    has_git: bool = False
+    has_gitignore: bool = False
+    has_pyplate_dir: bool = False
+
+    has_argparse: bool = False
+    has_argparse_sub: bool = False
 
     def __init__(self, args: argparse.ArgumentParser) -> None:
         self.args = args
         self.date = datetime.now().strftime("%Y-%m-%d")
+        self.out_dir = os.getcwd()
         self.has_main = self.args.main
         self.has_separators = self.args.separators
 
-        self.set_attribute("name", "Enter module name")
-        self.set_attribute("description", "Enter brief description")
-        self.set_attribute("author", "Enter name of author")
-        self.set_attribute("email", "Enter email of author")
+        self.set_attribute("name", "Enter module name", "")
+        self.set_attribute("description", "Enter brief description", "")
+        self.set_attribute("author", "Enter name of author", "BP_NAME")
+        self.set_attribute("email", "Enter email of author", "BP_EMAIL")
 
         # if external header, read into var
         if self.args.header is not None:
@@ -113,11 +129,11 @@ class TConf:
         else:
             self.header = t_header
 
-    def set_attribute(self, attribute: str, question: str):
-        if getattr(self.args, attribute) is not None:
+    def set_attribute(self, attribute: str, question: str, env: str):
+        if getattr(self.args, attribute) is not None:  # If command line arguments are present use them
             setattr(self, attribute, getattr(self.args, attribute))
         else:
-            setattr(self, attribute, query.query_string(question, ""))
+            setattr(self, attribute, Query.read_string(question, os.getenv(env)))
 
 
 t_preamble = TemplateX(
@@ -131,10 +147,11 @@ t_header = TemplateX(
     header_text="""\
 # ----------------------------------------------------------------------------
 #
-# __BRIEF__
+# __DESCRIPTION__
 #
 # File:     __NAME__
 # Author:   __AUTHOR__  __EMAIL__
+# Org:      __ORGANISTATION__
 # Date:     __DATE__
 # License:  __LICENSE__
 # Python:   >= 3.0
@@ -176,21 +193,23 @@ if __name__ == "__main__":
 t_application = TemplateX(
     variables_text="""\
 app_name = "__NAME__"
-app_version = "0.1"
-app_license = "X"
+app_version = "0.01"
+app_license = "__LICENSE__"
 app_author = "__AUTHOR__  __EMAIL__"
-app_description = "__DESCRIPTION__"
+app_org = "__ORGANISATION__"
+app_desc = "__DESCRIPTION__"
 """
 )
 
 t_argtable = TemplateX(
+    dependecies=[t_application],
     imports_text="""\
 import argparse
 """,
     main_func_text="""\
     parser = argparse.ArgumentParser(
         prog=app_name,
-        description=app_description,
+        description=app_desc,
         epilog="",
         add_help=True)
     parser.add_argument("--debug", action="store_true", default=False,
@@ -204,6 +223,7 @@ import argparse
 )
 
 t_argtable_cmd = TemplateX(
+    dependecies=[t_application],
     imports_text="""\
 import argparse
 """,
@@ -257,6 +277,7 @@ import logging
 
 
 t_qt5 = TemplateX(
+    dependecies=[t_application],
     imports_text="""\
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QStatusBar
 from PyQt5.QtCore import Qt
@@ -343,9 +364,11 @@ class MainWindow(Gtk.Window):
 class Template(TemplateX):
     """docstring for template."""
 
-    def __init__(self, conf: TConf):
+    def __init__(self, conf: TConf,  pre: List[TemplateX], post: List[TemplateX]):
         super().__init__()
         self.conf = conf
+        self.pre = pre
+        self.post = post
 
     def clear(self):
         self.text = ""
@@ -368,10 +391,22 @@ class Template(TemplateX):
         if self.conf.has_header:
             self.add(self.conf.header)
 
+        for x in self.pre:
+            self.add(x)
+
+        if Query.read_bool("Include argparse?", default=True):
+            if Query.read_bool("Argparse with subcommands?", default=False):
+                self.add(t_argtable_cmd)
+            else:
+                self.add(t_argtable)
+
         if self.conf.has_main_application:
             self.add(t_main_application)
         elif self.conf.has_main:
             self.add(t_main)
+
+        for x in self.post:
+            self.add(x)
 
         self.text += self.preamble_text
         self.text += self.header_text
@@ -383,7 +418,7 @@ class Template(TemplateX):
         self.text += self.code_text
 
         if self.conf.has_main or self.conf.has_main_application:
-            self.text += "def main():\n"
+            self.text += "def main() -> None:\n"
             if self.main_func_text == "":
                 self.text += "    pass"
             else:
@@ -403,10 +438,16 @@ class Template(TemplateX):
         self.replace("__DATE__", self.conf.date)
         self.replace("__LICENSE__", self.conf.license)
 
-    def write(self):
-        with open(self.conf.name, "w") as file:
+    def write(self, dir=None) -> str:
+        if dir is None:
+            file_name = f"{self.conf.out_dir}/{self.conf.name}"
+        else:
+            file_name = f"{dir}/{self.conf.name}"
+
+        with open(file_name, "w") as file:
             file.write(self.text)
-        os.chmod(self.conf.name, 0o770)
+        os.chmod(file_name, 0o770)
+        return file_name
 
     def __str__(self) -> str:
         return self.text
@@ -424,8 +465,8 @@ def app(conf: TConf, pre, post_t) -> Template:
     for x in pre:
         t.add(x)
 
-    if query.query_bool("Include argparse?", default="yes"):
-        if query.query_bool("Argparse with subcommands?", default="no"):
+    if Query.read_bool("Include argparse?", default=True):
+        if Query.read_bool("Argparse with subcommands?", default=False):
             t.add(t_argtable_cmd)
         else:
             t.add(t_argtable)
@@ -435,8 +476,90 @@ def app(conf: TConf, pre, post_t) -> Template:
 
     t.generate()
     t.write()
+
     if conf.args.debug:
         print(t)
+
+    return t
+
+
+@dataclass
+class ProjectGenerator:
+    create_subdir: bool = True
+    create_git: bool = True
+    create_gitignore: bool = True
+    create_readme: bool = True
+    create_history: bool = True
+    project_name: str = ""
+    project_dir: str = ""
+    subdir_name: str = ""
+
+    def query(self):
+        self.project_dir = os.getcwd()
+        self.project_name = Query.read_string("Project name?", self.project_name)
+        self.create_subdir = Query.read_bool("Create subdirectory?",
+                                             default=self.create_subdir)
+        if (self.create_subdir):
+            self.subdir_name = Query.read_string("Name of subdirectory?",
+                                                 default=self.project_name)
+
+        self.create_git = Query.read_bool("Initiate git repository?",
+                                          default=self.create_git)
+
+        if (self.create_git):
+            self.create_gitignore = Query.read_bool("Create .gitignore?",
+                                                    default=self.create_gitignore)
+            self.create_readme = Query.read_bool("Create README.md?",
+                                                 default=self.create_readme)
+            self.create_history = Query.read_bool("Create HISTORY.md?",
+                                                  default=self.create_history)
+
+    def git_add(self, file: str) -> None:
+        if self.create_git:
+            self.repo.index.add(file)
+
+    def create(self):
+        if self.create_subdir:
+            self.project_dir = f"{self.project_dir}/{self.subdir_name}"
+            if not Bp.mkdir(self.project_dir):
+                exit()
+
+        f_readme = f"{self.project_dir}/README.md"
+        f_history = f"{self.project_dir}/HISTORY.md"
+        f_gitignore = f"{self.project_dir}/.gitignore"
+
+        if self.create_git:
+            self.repo = Repo.init(self.project_dir)
+
+            if self.create_readme:
+                Bp.cp(f"{template_dir}/README.md", f_readme)
+                self.git_add(f_readme)
+
+            if self.create_history:
+                Bp.cp(f"{template_dir}/HISTORY.md", f_history)
+                self.git_add(f_history)
+
+            if self.create_gitignore:
+                Bp.cp(f"{template_dir}/gitignore", f_gitignore)
+                self.git_add(f_gitignore)
+
+    def commit(self):
+        if self.create_git:
+            self.repo.index.commit("Initial commit")
+
+
+def create_project(template: Template):
+
+    if Query.read_bool("Do you want to create a project?", False):
+        proj = ProjectGenerator()
+        proj.project_name = template.conf.name
+        proj.query()
+        proj.create()
+        proj.git_add(template.write(proj.project_dir))
+        proj.commit()
+        return True
+
+    return False
 
 
 def cmd_new(args):
@@ -445,7 +568,22 @@ def cmd_new(args):
     conf.has_main_application = True
     conf.has_separators = True
 
-    app(conf, [], [])
+    template = Template(conf, [], [])
+    template.generate()
+
+    if not create_project(template):
+        template.write()
+
+    # if Query.read_bool("Do you want to create a project?", False):
+    #     proj = ProjectGenerator()
+    #     proj.project_name = conf.name
+    #     proj.query()
+    #     proj.create()
+    #     proj.git_add(template.write(proj.project_dir))
+    #     proj.commit()
+    #     return
+
+    
 
 
 def cmd_newa(args):
@@ -483,10 +621,37 @@ def cmd_newgtk(args):
     app(conf, [t_application], [t_gtk])
 
 
+def cmd_newp(args):
+    proj = ProjectGenerator()
+    proj.query()
+    proj.create()
+
+    if Query.read_bool("Do you want to create a python file?", True):
+        pass
+
+    proj.commit()
+
+
+class Settings:
+    SETTINGS_DIR = "~/.config/pyplate"
+    SETTINGS_FILE = "pyplate.json"
+
+    def __init__(self) -> None:
+        with open("pyplate/pyplate.json") as f:
+            data = json.load(f)
+
+        print(data)
+
+    def create(self) -> None:
+        # Create personal settings
+        pass
+
+
+
 def main() -> None:
 
-    logging.basicConfig(level=logging.DEBUG,
-                        format="[%(levelname)s]%(asctime)s %(message)s")
+    # logging.basicConfig(level=logging.DEBUG,
+    #                     format="[%(levelname)s]%(asctime)s %(message)s")
 
     parrent_parser = argparse.ArgumentParser(add_help=False)
     parrent_parser.add_argument("--name",
@@ -499,11 +664,15 @@ def main() -> None:
                                 )
     parrent_parser.add_argument("--author",
                                 type=str,
-                                help="Author of file"
+                                help="Name of author"
                                 )
     parrent_parser.add_argument("--email",
                                 type=str,
-                                help="Email of author of file"
+                                help="Email of author"
+                                )
+    parrent_parser.add_argument("--project",
+                                type=str,
+                                help="Name of project"
                                 )
     # parrent_parser.add_argument("--license",
     #                             type=str,
@@ -575,6 +744,9 @@ def main() -> None:
     parser_new = subparsers.add_parser("newgtk", parents=[parrent_parser],
                                        help="Create a new GTK3+ application")
     parser_new.set_defaults(func=cmd_newgtk)
+    parser_new = subparsers.add_parser("newp", parents=[parrent_parser],
+                                       help="Create python project")
+    parser_new.set_defaults(func=cmd_newp)
 
     args = parser.parse_args()
 

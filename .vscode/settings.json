@@ -4,10 +4,13 @@
     "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
     "python.formatting.provider": "black",
-    "editor.defaultFormatter": null, 
     "editor.formatOnSaveMode": "file",
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
     }
 }
