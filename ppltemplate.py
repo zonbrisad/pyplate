@@ -49,9 +49,9 @@ AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
 
 # Absolute path to script itself
 self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
-template_dir = f"{self_dir}/pyplate"
 
-readme_md = f"{template_dir}/README.md"
+template_dir = f"{self_dir}/pyplate"
+#readme_md = f"{template_dir}/README.md"
 
 # Code ----------------------------------------------------------------------
 
@@ -67,15 +67,13 @@ class TemplateX:
     main_func_text: str = ""
     main_text: str = ""
 
-    dependecies: List[TemplateX] = []
+#    dependencies: List[TemplateX] = field(default_factory=list)
 
     def add(self, a: TemplateX):
         self.preamble_text += a.preamble_text
         self.header_text += a.header_text
         self.imports_text += a.imports_text
         self.variables_text += a.variables_text
-        # if self.code_text != "":
-        #    self.code_text += a.code_text + "\n\n"
         self.code_text += a.code_text
         self.main_func_text += a.main_func_text
         self.main_text += a.main_text
@@ -100,12 +98,6 @@ class TConf:
     has_main: bool = False
     has_main_application: bool = False
     has_separators: bool = False
-    has_project: bool = False
-    has_directory: bool = False
-    has_git: bool = False
-    has_gitignore: bool = False
-    has_pyplate_dir: bool = False
-
     has_argparse: bool = False
     has_argparse_sub: bool = False
 
@@ -136,235 +128,10 @@ class TConf:
             setattr(self, attribute, Query.read_string(question, os.getenv(env)))
 
 
-t_preamble = TemplateX(
-    preamble_text="""\
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-)
-
-t_header = TemplateX(
-    header_text="""\
-# ----------------------------------------------------------------------------
-#
-# __DESCRIPTION__
-#
-# File:     __NAME__
-# Author:   __AUTHOR__  __EMAIL__
-# Org:      __ORGANISTATION__
-# Date:     __DATE__
-# License:  __LICENSE__
-# Python:   >= 3.0
-#
-# ----------------------------------------------------------------------------
-"""
-)
-
-t_main = TemplateX(
-    main_text="""\
-if __name__ == "__main__":
-    main()
-"""
-)
-
-t_main_application = TemplateX(
-    imports_text="""\
-import traceback
-import os
-import sys
-""",
-    main_text="""\
-if __name__ == "__main__":
-    try:
-        main()
-        sys.exit(0)
-    except KeyboardInterrupt as e: # Ctrl-C
-        raise e
-    except SystemExit as e:        # sys.exit()
-        raise e
-    except Exception as e:
-        print('ERROR, UNEXPECTED EXCEPTION')
-        print(str(e))
-        traceback.print_exc()
-        os._exit(1)
-"""
-)
-
-t_application = TemplateX(
-    variables_text="""\
-app_name = "__NAME__"
-app_version = "0.01"
-app_license = "__LICENSE__"
-app_author = "__AUTHOR__  __EMAIL__"
-app_org = "__ORGANISATION__"
-app_desc = "__DESCRIPTION__"
-"""
-)
-
-t_argtable = TemplateX(
-    dependecies=[t_application],
-    imports_text="""\
-import argparse
-""",
-    main_func_text="""\
-    parser = argparse.ArgumentParser(
-        prog=app_name,
-        description=app_desc,
-        epilog="",
-        add_help=True)
-    parser.add_argument("--debug", action="store_true", default=False,
-                        help="Print debug messages")
-    parser.add_argument("--version", action="version",
-                        version=f"{app_name} {app_version}",
-                        help="Print version information")
-    args = parser.parse_args()
-    parser.print_help()
-"""
-)
-
-t_argtable_cmd = TemplateX(
-    dependecies=[t_application],
-    imports_text="""\
-import argparse
-""",
-    code_text="""
-def cmd_cmd1():
-    pass
-
-
-""",
-    main_func_text="""\
-    p_parser = argparse.ArgumentParser(add_help=False)
-    p_parser.add_argument("--debug", action="store_true", default=False,
-                          help="Print debug messages")
-    p_parser.add_argument("--version", action="version",
-                          help="Print version information",
-                          version=f"{app_name} {app_version}")
-
-    parser = argparse.ArgumentParser(
-        prog=app_name,
-        description=app_description,
-        epilog="",
-        parents=[p_parser]
-        )
-    subparsers = parser.add_subparsers(title="Commands",
-                                       help="",
-                                       description="")
-
-    cmd1 = subparsers.add_parser("cmd1", parents=[p_parser],
-                                 help="Command 1")
-    cmd1.set_defaults(func=cmd_cmd1)
-
-    args = parser.parse_args()
-
-    if hasattr(args, "func"):
-        args.func()
-        exit(0)
-
-    parser.print_help()
-"""
-)
-
-
-t_logging = TemplateX(
-    imports_text="""\
-import logging
-""",
-    main_func_text="""\
-    logging.basicConfig
-"""
-)
-
-
-t_qt5 = TemplateX(
-    dependecies=[t_application],
-    imports_text="""\
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QStatusBar
-from PyQt5.QtCore import Qt
-""",
-    variables_text="""
-# Qt main window settings
-win_title = app_name
-win_x_size = 320
-win_y_size = 240
-""",
-    code_text="""\
-class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
-
-        self.resize(win_y_size, win_y_size)
-        self.setWindowTitle(win_title)
-
-        # Menubar
-        self.menubar = QMenuBar(self)
-        self.setMenuBar(self.menubar)
-
-        # Menus
-        self.menuFile = QMenu("File", self.menubar)
-        self.menubar.addAction(self.menuFile.menuAction())
-
-        self.menuHelp = QMenu("Help", self.menubar)
-        self.menubar.addAction(self.menuHelp.menuAction())
-
-        self.actionQuit = QAction("Quit", self)
-        self.actionQuit.setStatusTip("Quit application")
-        self.actionQuit.setShortcut("Ctrl+Q")
-        self.actionQuit.triggered.connect(self.exit)
-        self.menuFile.addAction(self.actionQuit)
-
-        self.actionAbout = QAction("About", self)
-        self.actionAbout.triggered.connect(self.about)
-        self.menuHelp.addAction(self.actionAbout)
-
-        # Statusbar
-        self.statusbar = QStatusBar(self)
-        self.statusbar.setLayoutDirection(Qt.LeftToRight)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
-
-    def exit(self):
-        self.close()
-
-    def about(self):
-        pass
-
-
-""",
-    main_func_text="""\
-    app = QApplication(sys.argv)
-    main_window = MainWindow()
-    main_window.show()
-    sys.exit(app.exec_())
-"""
-)
-
-t_gtk = TemplateX(
-    imports_text="""\
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
-""",
-    code_text="""\
-class MainWindow(Gtk.Window):
-    def __init__(self):
-        super().__init__(title=app_name)
-
-
-""",
-    main_func_text="""\
-    main_win = MainWindow()
-    main_win.connect("destroy", Gtk.main_quit)
-    main_win.show_all()
-    Gtk.main()
-"""
-)
-
-
 class Template(TemplateX):
     """docstring for template."""
 
-    def __init__(self, conf: TConf,  pre: List[TemplateX], post: List[TemplateX]):
+    def __init__(self, conf: TConf, pre: List[TemplateX], post: List[TemplateX]):
         super().__init__()
         self.conf = conf
         self.pre = pre
@@ -459,30 +226,6 @@ def print_info():
     print("Script path    " + os.path.realpath(__file__))
 
 
-def app(conf: TConf, pre, post_t) -> Template:
-    t = Template(conf)
-
-    for x in pre:
-        t.add(x)
-
-    if Query.read_bool("Include argparse?", default=True):
-        if Query.read_bool("Argparse with subcommands?", default=False):
-            t.add(t_argtable_cmd)
-        else:
-            t.add(t_argtable)
-
-    for x in post_t:
-        t.add(x)
-
-    t.generate()
-    t.write()
-
-    if conf.args.debug:
-        print(t)
-
-    return t
-
-
 @dataclass
 class ProjectGenerator:
     create_subdir: bool = True
@@ -548,6 +291,286 @@ class ProjectGenerator:
             self.repo.index.commit("Initial commit")
 
 
+t_preamble = TemplateX(
+    preamble_text="""\
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+)
+
+t_header = TemplateX(
+    header_text="""\
+# ----------------------------------------------------------------------------
+#
+# __DESCRIPTION__
+#
+# File:     __NAME__
+# Author:   __AUTHOR__  __EMAIL__
+# Org:      __ORGANISTATION__
+# Date:     __DATE__
+# License:  __LICENSE__
+# Python:   >= 3.0
+#
+# ----------------------------------------------------------------------------
+"""
+)
+
+t_main = TemplateX(
+    main_text="""\
+if __name__ == "__main__":
+    main()
+"""
+)
+
+t_main_application = TemplateX(
+    imports_text="""\
+import traceback
+import os
+import sys
+""",
+    main_text="""\
+if __name__ == "__main__":
+    try:
+        main()
+        sys.exit(0)
+    except KeyboardInterrupt as e: # Ctrl-C
+        raise e
+    except SystemExit as e:        # sys.exit()
+        raise e
+    except Exception as e:
+        print('ERROR, UNEXPECTED EXCEPTION')
+        print(str(e))
+        traceback.print_exc()
+        os._exit(1)
+"""
+)
+
+t_application = TemplateX(
+    variables_text="""\
+app_name = "__NAME__"
+app_version = "0.01"
+app_license = "__LICENSE__"
+app_author = "__AUTHOR__  __EMAIL__"
+app_org = "__ORGANISATION__"
+app_description = "__DESCRIPTION__"
+"""
+)
+
+t_argtable = TemplateX(
+#    dependecies=[t_application],
+    imports_text="""\
+import argparse
+""",
+    main_func_text="""\
+    parser = argparse.ArgumentParser(
+        prog=app_name,
+        description=app_description,
+        epilog="",
+        add_help=True)
+    parser.add_argument("--debug", action="store_true", default=False,
+                        help="Print debug messages")
+    parser.add_argument("--version", action="version",
+                        version=f"{app_name} {app_version}",
+                        help="Print version information")
+    args = parser.parse_args()
+    # parser.print_help()
+"""
+)
+
+t_argtable_cmd = TemplateX(
+#    dependecies=[t_application],
+    imports_text="""\
+import argparse
+""",
+    code_text="""
+def cmd_cmd1():
+    pass
+
+
+""",
+    main_func_text="""\
+    p_parser = argparse.ArgumentParser(add_help=False)
+    p_parser.add_argument("--debug", action="store_true", default=False,
+                          help="Print debug messages")
+    p_parser.add_argument("--version", action="version",
+                          help="Print version information",
+                          version=f"{app_name} {app_version}")
+
+    parser = argparse.ArgumentParser(
+        prog=app_name,
+        description=app_description,
+        epilog="",
+        parents=[p_parser]
+        )
+    subparsers = parser.add_subparsers(title="Commands",
+                                       help="",
+                                       description="")
+
+    cmd1 = subparsers.add_parser("cmd1", parents=[p_parser],
+                                 help="Command 1")
+    cmd1.set_defaults(func=cmd_cmd1)
+
+    args = parser.parse_args()
+
+    if hasattr(args, "func"):
+        args.func()
+        exit(0)
+
+    parser.print_help()
+"""
+)
+
+
+t_logging = TemplateX(
+    imports_text="""\
+import logging
+""",
+    main_func_text="""\
+    logging.basicConfig
+"""
+)
+
+
+t_qt5 = TemplateX(
+#    dependecies=[t_application],
+    imports_text="""\
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar,\\
+                            QAction, QStatusBar, QDialog, QVBoxLayout,\\
+                            QHBoxLayout, QTextEdit, QDialogButtonBox,\\
+                            QPushButton, QMessageBox
+from PyQt5.QtCore import Qt
+""",
+    variables_text="""
+# Qt main window settings
+win_title = app_name
+win_x_size = 320
+win_y_size = 240
+""",
+    code_text="""\
+about_html=f\"\"\"
+<center><h2>{app_name}</h2></center>
+<br>
+<b>Version: </b>{app_version}
+<br>
+<b>Author: </b>{app_author}
+<br>
+<hr>
+<br>
+{app_description}
+<br>
+\"\"\"
+
+
+class AboutDialog(QDialog):
+    def __init__(self, parent = None):
+        super(AboutDialog, self).__init__(parent)
+
+        self.setWindowTitle(app_name)
+        self.setWindowModality(Qt.ApplicationModal)
+        self.resize(400, 300)
+
+        self.verticalLayout = QVBoxLayout(self)
+        self.verticalLayout.setSpacing(2)
+        self.setLayout(self.verticalLayout)
+
+        # TextEdit
+        self.textEdit = QTextEdit(self)
+        self.textEdit.setReadOnly(True)
+        self.verticalLayout.addWidget(self.textEdit)
+        self.textEdit.insertHtml(about_html)
+
+        # Buttonbox
+        self.buttonBox = QDialogButtonBox(self)
+        self.buttonBox.setStandardButtons( QDialogButtonBox.Ok )
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.setCenterButtons(True)
+        self.verticalLayout.addWidget(self.buttonBox)
+
+    @staticmethod
+    def about(parent = None):
+        dialog = AboutDialog(parent)
+        result = dialog.exec_()
+        return (result == QDialog.Accepted)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self, parent=None):
+        super(MainWindow, self).__init__(parent)
+
+        self.resize(win_y_size, win_y_size)
+        self.setWindowTitle(win_title)
+
+        # Menubar
+        self.menubar = QMenuBar(self)
+        self.setMenuBar(self.menubar)
+
+        # Menus
+        self.menuFile = QMenu("File", self.menubar)
+        self.menubar.addAction(self.menuFile.menuAction())
+
+        self.menuHelp = QMenu("Help", self.menubar)
+        self.menubar.addAction(self.menuHelp.menuAction())
+
+        self.actionQuit = QAction("Quit", self)
+        self.actionQuit.setStatusTip("Quit application")
+        self.actionQuit.setShortcut("Ctrl+Q")
+        self.actionQuit.triggered.connect(self.exit)
+        self.menuFile.addAction(self.actionQuit)
+
+        self.actionAbout = QAction("About", self)
+        self.actionAbout.triggered.connect(self.about)
+        self.menuHelp.addAction(self.actionAbout)
+
+        # Statusbar
+        self.statusbar = QStatusBar(self)
+        self.statusbar.setLayoutDirection(Qt.LeftToRight)
+        self.statusbar.setObjectName("statusbar")
+        self.setStatusBar(self.statusbar)
+
+    def exit(self):
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setWindowTitle("Quit")
+        msgBox.setText("Are you sure you want to quit?")
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
+        if msgBox.exec() == QMessageBox.Ok:
+            self.close()
+
+    def about(self):
+        AboutDialog.about()
+
+
+""",
+    main_func_text="""\
+    app = QApplication(sys.argv)
+    main_window = MainWindow()
+    main_window.show()
+    sys.exit(app.exec_())
+"""
+)
+
+t_gtk = TemplateX(
+    imports_text="""\
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+""",
+    code_text="""\
+class MainWindow(Gtk.Window):
+    def __init__(self):
+        super().__init__(title=app_name)
+
+
+""",
+    main_func_text="""\
+    main_win = MainWindow()
+    main_win.connect("destroy", Gtk.main_quit)
+    main_win.show_all()
+    Gtk.main()
+"""
+)
+
+
 def create_project(template: Template):
 
     if Query.read_bool("Do you want to create a project?", False):
@@ -574,17 +597,6 @@ def cmd_new(args):
     if not create_project(template):
         template.write()
 
-    # if Query.read_bool("Do you want to create a project?", False):
-    #     proj = ProjectGenerator()
-    #     proj.project_name = conf.name
-    #     proj.query()
-    #     proj.create()
-    #     proj.git_add(template.write(proj.project_dir))
-    #     proj.commit()
-    #     return
-
-    
-
 
 def cmd_newa(args):
     conf = TConf(args)
@@ -592,7 +604,11 @@ def cmd_newa(args):
     conf.has_main_application = True
     conf.has_separators = True
 
-    app(conf, [t_application], [])
+    template = Template(conf, [t_application], [])
+    template.generate()
+
+    if not create_project(template):
+        template.write()
 
 
 def cmd_newm(args):
@@ -600,7 +616,9 @@ def cmd_newm(args):
     conf.has_main = False
     conf.has_main_application = False
 
-    app(conf, [], [])
+    template = Template(conf, [t_application], [])
+    template.generate()
+    template.write()
 
 
 def cmd_newqt(args):
@@ -609,7 +627,11 @@ def cmd_newqt(args):
     conf.has_main_application = True
     conf.has_separators = True
 
-    app(conf, [t_application], [t_qt5])
+    template = Template(conf, [t_application], [t_qt5])
+    template.generate()
+
+    if not create_project(template):
+        template.write()
 
 
 def cmd_newgtk(args):
@@ -617,18 +639,17 @@ def cmd_newgtk(args):
     conf.has_main = False
     conf.has_main_application = True
     conf.has_separators = True
+    template = Template(conf, [t_application], [t_gtk])
+    template.generate()
 
-    app(conf, [t_application], [t_gtk])
+    if not create_project(template):
+        template.write()
 
 
 def cmd_newp(args):
     proj = ProjectGenerator()
     proj.query()
     proj.create()
-
-    if Query.read_bool("Do you want to create a python file?", True):
-        pass
-
     proj.commit()
 
 
@@ -645,7 +666,6 @@ class Settings:
     def create(self) -> None:
         # Create personal settings
         pass
-
 
 
 def main() -> None:
@@ -729,6 +749,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(title="Commands",
                                        help="",
                                        description="")
+                                       
     parser_new = subparsers.add_parser("new", parents=[parrent_parser],
                                        help="Create a new python file")
     parser_new.set_defaults(func=cmd_new)
