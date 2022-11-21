@@ -157,9 +157,9 @@ new() { ##D Create new python file
 newa() { ##D Create new terminal application
   if hasSettings; then
     source ${PPL_SETTINGS}
-    ppltemplate.py newa ${ARGS} --header ${PPL_DIR}/header.txt --author "${PPL_NAME}" --email "${PPL_EMAIL}"
+    ppltemplate.py newa ${ARGS} --header ${PPL_DIR}/header.txt --author "${PPL_NAME}" --email "${PPL_EMAIL}" --separators
   else
-    ppltemplate.py newa ${ARGS} 
+    ppltemplate.py newa ${ARGS} --separators
   fi
 }
 
@@ -171,6 +171,18 @@ newm() { ##D Create new minimal python file
     ppltemplate.py newm ${ARGS} 
   fi
 }
+
+
+##C- DEV GUI Templates
+
+newqt() { ##C DEV Create new QT5 python project 
+  createProject "Creating new Qt5 python project" ${BP_DIR}/pyplate-qt5.py
+}
+
+newgtk() { ##C DEV Create new GTK python project
+  :
+}
+
 
 ##- Header
 hasSettings() {
@@ -189,7 +201,8 @@ bpVarExist() {
   fi
 }
 
-bpDefault() { ##I  
+
+bpDefault() { 
   if bpVarExist "$1"; then
     return $$1
   fi
@@ -229,10 +242,8 @@ cls() { ##D Create a local settings
   bpAddSetting  $PPL_SETTINGS "PPL_LICENSE" "$(bpRead "Enter license")" "Default license"
 }
 
-##- Setup
-install-ppl() { ##D Install bashplates init
-  bpAddModule "${BP_SELF_DIR}/pypl_init"
-}
+
+
 
 ##C- DEV GUI Templates
 
@@ -243,6 +254,7 @@ newqt() { ##C DEV Create new QT5 python project
 newgtk() { ##C DEV Create new GTK python project
   :
 }
+
 
 ##C- DEV Template edit
 
@@ -258,11 +270,10 @@ eh() { ##C DEV Edit header
   bpEdit ${TEMPLATES}/header
 }
 
+##- Setup
 
-##C- DEV Setup
-
-install() { ##C DEV Install init module
-  bpAddModule ${BP_DIR}/pypl_init
+install() { ##D Install init module
+  bpAddModule ${BP_SELF_DIR}/pypl_init
 }
 
 ##C- DEV Project management (git)

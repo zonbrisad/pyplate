@@ -1,6 +1,5 @@
 
-# PyPlate
-
+# Title
 
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -36,21 +35,28 @@
 
 ## Features
 
+
 ## Requirements
 
 ### Runtime
 
 ### Development
 
+
 ## Install
+
 
 ### Download
 
+
 ### Installation
+
 
 ### Configuration
 
+
 ## Freqlenty asked Questions
+
 
 ## History
 
@@ -58,34 +64,79 @@
 
 
 ## ToDo
-- Class generation
-- Custom header
-- Project mgt
 
 
 ## Links
 
-- [Python GTK+ 3 Tutorial](https://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html)
-
 
 ## Contribute
 
-**Author:** Peter Malmberg <peter.malmberg@gmail.com>
 
 ## License 
 
-MIT
 
-```mermaid
-  flowchart 
-    S[Start] --> A;
-    A[Do something] --> B{Choose?}
-    B --> |No| C[Ha Ha]
-    B --> |YES| D[Ho Ho]
-    C --> E[Joining]
-    D --> E
-    E --> F{Another choise}
-    F --> |Yes| G[Ending]
-    F --> |No| A
+## Some examples, remove after creation
+
+# The largest heading
+## The second largest heading
+###### The smallest heading
+
+`quoting code`
+
+```c
+void main(int arc, char argv**) {
+  exit 0;
+}
 ```
 
+
+| Style  | Syntax  | Example | Output |
+|------- |-------- |---------|--------|
+| Bold   | `** **` | `**This is bold text**`  | **This is bold text** |
+| Italic | `* *`   | ` *This text is italicized*` | *This text is italicized* |
+| Strikethrough | `~~ ~~` | `~~This was mistaken text~~` | ~~This was mistaken text~~ |
+| Subscript | `<sub> </sub>` | `Ordinary, <sup>subscript</sub>` | Ordinary <sub>subscript</sub> |
+| Superscript | `<sup> </sup>` | `Ordinary, <sup>superscript</sup>` | Ordinary <sup>superscript</sup> |
+
+> Text that is a quote
+
+
+
+## Tables
+
+| Header 1 | Header 2 |
+| -------- | -------- |
+|   C1     | C2       |
+|   C3     | C4       |
+
+
+## List
+
+- Item 1
+- Item 2
+- Item 3
+
+## Task list
+
+- [ ] Task 1
+- [x] Task 2
+- [ ] Task 3
+
+
+## Colapsed section
+
+<details><summary>CLICK ME</summary>
+<p>
+
+#### We can hide anything, even code!
+
+```ruby
+puts "Hello World"
+```
+
+</p>
+</details>
+
+## Links
+
+[Markup basics](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/autolinked-references-and-urls)

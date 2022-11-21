@@ -1,4 +1,17 @@
 {
+    "python.analysis.typeCheckingMode": "basic",
     "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSaveMode": "file",
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ascomycota.python-six",
+    },
+    "cmake.configureOnOpen": false
 }
