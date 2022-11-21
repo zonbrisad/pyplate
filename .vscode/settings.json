@@ -11,6 +11,7 @@
         "source.organizeImports": true
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
-    }
+        "editor.defaultFormatter": "ascomycota.python-six",
+    },
+    "cmake.configureOnOpen": false
 }

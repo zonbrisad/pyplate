@@ -32,6 +32,7 @@ import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
+from tkinter.messagebox import NO
 from typing import List
 
 from git import Repo
@@ -126,6 +127,46 @@ class TConf:
             setattr(self, attribute, getattr(self.args, attribute))
         else:
             setattr(self, attribute, Query.read_string(question, os.getenv(env)))
+
+
+@dataclass
+class ClassTemplate():
+    name: str = ""
+    parrent: str = ""
+    methods: str = ""
+    dataclass: bool = False
+    _init: str = ""
+    _str: str = ""
+    _eq: str = ""
+    vars = None
+
+    def add_var(self, name, type="", default=""):
+        if self.vars == None:
+            self.vars = []
+            
+        self.vars.append({name, type, default})
+        
+
+    def __str__(self) -> str:
+        if self.vars == None:
+            self.vars = []
+            
+        str = ""
+        if self.dataclass:
+            str = "@dataclass\n"
+        
+        if self.parrent == "":
+            str += f"class {self.name}:"
+        else:
+            str = f"class {self.name}({self.parrent}):"
+
+        for v in self.vars:
+            str += f"    {v[0]}"
+
+        
+        
+        return str
+        
 
 
 class Template(TemplateX):
@@ -353,6 +394,7 @@ app_license = "__LICENSE__"
 app_author = "__AUTHOR__  __EMAIL__"
 app_org = "__ORGANISATION__"
 app_description = "__DESCRIPTION__"
+#app_icon = ""
 """
 )
 
@@ -434,15 +476,18 @@ import logging
 t_qt5 = TemplateX(
 #    dependecies=[t_application],
     imports_text="""\
+from PyQt5.QtCore import Qt, QTimer, QSettings, QIODevice
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar,\\
                             QAction, QStatusBar, QDialog, QVBoxLayout,\\
                             QHBoxLayout, QTextEdit, QDialogButtonBox,\\
-                            QPushButton, QMessageBox
-from PyQt5.QtCore import Qt
+                            QPushButton, QMessageBox, QWidget, QLabel,\\
+                            QFileDialog, QSpacerItem, QSizePolicy
 """,
     variables_text="""
 # Qt main window settings
 win_title = app_name
+#win_icon="myicon.png"
 win_x_size = 320
 win_y_size = 240
 """,
@@ -499,6 +544,17 @@ class MainWindow(QMainWindow):
 
         self.resize(win_y_size, win_y_size)
         self.setWindowTitle(win_title)
+        #self.setWindowIcon(QIcon(app_icon))
+
+        # Create central widget
+        self.centralwidget = QWidget(self)
+        self.setCentralWidget(self.centralwidget)
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setSpacing(2)
+
+        # TextEdit
+        self.textEdit = QTextEdit(self.centralwidget)
+        self.verticalLayout.addWidget(self.textEdit)
 
         # Menubar
         self.menubar = QMenuBar(self)
@@ -511,6 +567,13 @@ class MainWindow(QMainWindow):
         self.menuHelp = QMenu("Help", self.menubar)
         self.menubar.addAction(self.menuHelp.menuAction())
 
+        self.actionOpen = QAction("Open", self)
+        self.actionOpen.setStatusTip("Open file")
+        self.actionOpen.setShortcut("Ctrl+O")
+        self.actionOpen.triggered.connect(self.open)
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addSeparator()
+
         self.actionQuit = QAction("Quit", self)
         self.actionQuit.setStatusTip("Quit application")
         self.actionQuit.setShortcut("Ctrl+Q")
@@ -518,6 +581,7 @@ class MainWindow(QMainWindow):
         self.menuFile.addAction(self.actionQuit)
 
         self.actionAbout = QAction("About", self)
+        self.actionAbout.setStatusTip("About")
         self.actionAbout.triggered.connect(self.about)
         self.menuHelp.addAction(self.actionAbout)
 
@@ -535,6 +599,9 @@ class MainWindow(QMainWindow):
         msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
         if msgBox.exec() == QMessageBox.Ok:
             self.close()
+
+    def open(self):
+        files = QFileDialog.getOpenFileNames(self, "Open file", ".", "*.*")
 
     def about(self):
         AboutDialog.about()
