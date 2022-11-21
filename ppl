@@ -136,7 +136,7 @@ newScript() {
 #   bpReplace ./${pn}.py "__ORG__"     "${BP_ORG}"
 # }
 
-##- Basic Templates
+# Basic Templates
 
 new() { ##D Create new python file
   #set -o xtrace
@@ -189,7 +189,7 @@ bpVarExist() {
   fi
 }
 
-bpDefault() { ##D 
+bpDefault() { ##I  
   if bpVarExist "$1"; then
     return $$1
   fi
