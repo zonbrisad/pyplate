@@ -146,7 +146,6 @@ class ClassTemplate():
             
         self.vars.append({name, type, default})
         
-
     def __str__(self) -> str:
         if self.vars == None:
             self.vars = []
@@ -167,7 +166,6 @@ class ClassTemplate():
         
         return str
         
-
 
 class Template(TemplateX):
     """docstring for template."""
@@ -477,7 +475,7 @@ t_qt5 = TemplateX(
 #    dependecies=[t_application],
     imports_text="""\
 from PyQt5.QtCore import Qt, QTimer, QSettings, QIODevice
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCloseEvent
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar,\\
                             QAction, QStatusBar, QDialog, QVBoxLayout,\\
                             QHBoxLayout, QTextEdit, QDialogButtonBox,\\
@@ -605,6 +603,10 @@ class MainWindow(QMainWindow):
 
     def about(self):
         AboutDialog.about()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.exit()
+        return super().closeEvent(event)
 
 
 """,

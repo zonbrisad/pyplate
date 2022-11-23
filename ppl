@@ -259,7 +259,7 @@ eh() { ##C DEV Edit header
 }
 
 ep() { ##C DEV Edit ppltemplate.py
-  bpEdit "${BP_DIR}/ppltemplate.py"
+  bpEdit "${BP_DIR}/ppltemplate.py" "$2"
 }
 
 
@@ -655,7 +655,6 @@ bpColorizeUrl() { ##I Colorize string containing URL
 bpFilterEscape() { ##I Filter escape characters from string
   echo "$1" | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"
 }
-  
 
 ##C- IHELP File operations
 
@@ -663,10 +662,12 @@ bpFilterEscape() { ##I Filter escape characters from string
 # $1 command to execute
 #
 bpRun() { ##I Execute command
-  if [ -e "$1" ]; then
-    ${1}
+  if bpHasCmd "${1}"; then
+    "$@"
+    return $?
   else
-    bpError "Could not execute $1, file does not exist!"
+    bpError "Could not execute $1, command does not exist!"
+    return 1
   fi
 }
 
@@ -819,16 +820,23 @@ bpStrExist() { ##I Check if string exist in file
 
 #
 # $1 file to open in editor
+# $2 override editor (optional)
 #
-bpEdit() { ##I Open file in default editor (BP_EDIT variable must be set)
+bpEdit() { ##I Open file in editor set by BP_EDIT variable
+
+  if [ -n "$2" ]; then
+    bpRun "$2" "$1"
+    return 0
+  fi
+
   if [ -n "$BP_EDITOR" ]; then
-    ${BP_EDITOR} "${1}"
+    bpRun "${BP_EDITOR}" "${1}"
   else
     bpError "BP_EDITOR variable not set, can't open file ${1}"
   fi
 }
 
-# 
+#
 # $1 file
 # $2 start marker
 # $3 end marker
@@ -837,14 +845,13 @@ bpGetSection() { ##I Get text from file between two markers
   cat "$1" | grep -A 10000 -m 1 "$2" | grep -B 10000 -m 1 "$3" | grep -v "$2" | grep -v "$3"
 }
 
-
-# 
+#
 # $1 File to import
 #
 bpImport() { ## Import file into variable
-  if [ -f $1 ]; then
-	  cat $1
-	fi
+  if [ -f "$1" ]; then
+    cat "$1"
+  fi
 }
 
 #
@@ -853,13 +860,11 @@ bpImport() { ## Import file into variable
 # $3 text to insert
 #
 bpInsert() { ##I Insert text into file
-	a=$( cat "$1" | grep -A 10000 "$2" | grep -v "$2" )
-	b=$( cat "$1" | grep -B 10000 "$2" | grep -v "$2" )
- 
-  echo "$b" "$3" "$a"  >| $1
+  a=$(grep -A 10000 "$2" <"$1" | grep -v "$2")
+  b=$(grep -B 10000 "$2" <"$1" | grep -v "$2")
+
+  echo "$b" "$3" "$a" >|"$1"
 }
-
-
 
 ##C- IHELP Input
 
@@ -1422,7 +1427,18 @@ iinfo() { ##I Show information about script
 }
 
 #
-iview() {  ##I View example
+# $1 command to check
+#
+bpHasCmd() { ##I Check if command is available
+  if [ -x "$(command -v "${1}")" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+#
+iview() { ##I View example
   # Singe command documentation
   if [ "$2" != "" ]; then
     echo
@@ -1476,10 +1492,9 @@ ivars() { ##I Print internal variables
   echo
 }
 
-ied() { ##I Open this file with standard editor
-  bpEdit $0
+ied() { ##I Open this file with default editor
+  bpEdit "$0" "$2"
 }
-
 
 version() { ##D Print version information
   echo "$BP_VERSION"
@@ -1605,28 +1620,6 @@ bpLoadSettings
 if [ -n "$PRE_SCRIPT_HOOK" ]; then
   ${PRE_SCRIPT_HOOK} "$@"
 fi
-
-#xx() {
-
-# OPTS=$(getopt --longoptions idebug -- "$@")
-# echo $OPTS
-# eval set --$OPTS
-
-# while true; do
-#   case "$1" in
-#     --idebug)
-#       set -o xtrace
-#         ;;
-#     --)
-#         shift
-#         break
-#         ;;
-#     esac
-#     shift
-# done
-#}
-#echo $@
-#xx
 
 # Run command parser
 bpRunCommand "$@"
