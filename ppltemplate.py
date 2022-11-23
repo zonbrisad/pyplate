@@ -32,7 +32,6 @@ import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime
-from tkinter.messagebox import NO
 from typing import List
 
 from git import Repo
@@ -52,7 +51,7 @@ AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
 self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 
 template_dir = f"{self_dir}/pyplate"
-#readme_md = f"{template_dir}/README.md"
+# readme_md = f"{template_dir}/README.md"
 
 # Code ----------------------------------------------------------------------
 
@@ -126,7 +125,8 @@ class TConf:
         if getattr(self.args, attribute) is not None:  # If command line arguments are present use them
             setattr(self, attribute, getattr(self.args, attribute))
         else:
-            setattr(self, attribute, Query.read_string(question, os.getenv(env)))
+            setattr(self, attribute, 
+                    Query.read_string(question, os.getenv(env)))
 
 
 @dataclass
@@ -141,19 +141,19 @@ class ClassTemplate():
     vars = None
 
     def add_var(self, name, type="", default=""):
-        if self.vars == None:
+        if self.vars is None:
             self.vars = []
-            
+
         self.vars.append({name, type, default})
-        
+
     def __str__(self) -> str:
-        if self.vars == None:
+        if self.vars is None:
             self.vars = []
-            
+
         str = ""
         if self.dataclass:
             str = "@dataclass\n"
-        
+
         if self.parrent == "":
             str += f"class {self.name}:"
         else:
@@ -162,10 +162,8 @@ class ClassTemplate():
         for v in self.vars:
             str += f"    {v[0]}"
 
-        
-        
         return str
-        
+
 
 class Template(TemplateX):
     """docstring for template."""
