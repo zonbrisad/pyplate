@@ -384,31 +384,34 @@ if __name__ == "__main__":
 
 t_application = TemplateX(
     variables_text="""\
-app_name = "__NAME__"
-app_version = "0.01"
-app_license = "__LICENSE__"
-app_author = "__AUTHOR__  __EMAIL__"
-app_org = "__ORGANISATION__"
-app_description = "__DESCRIPTION__"
-#app_icon = ""
+class App:
+    NAME = "__NAME__"
+    VERSION = "0.01"
+    DESCRIPTION = "__DESCRIPTION__"
+    LICENSE = ""
+    AUTHOR = "__AUTHOR__"
+    EMAIL = "__EMAIL__"
+    ORG = "__ORGANISATION__"
+    HOME = ""
+    ICON = ""
+
 """
 )
 
 t_argtable = TemplateX(
-#    dependecies=[t_application],
     imports_text="""\
 import argparse
 """,
     main_func_text="""\
     parser = argparse.ArgumentParser(
-        prog=app_name,
-        description=app_description,
+        prog=App.NAME,
+        description=App.DESCRIPTION,
         epilog="",
         add_help=True)
     parser.add_argument("--debug", action="store_true", default=False,
                         help="Print debug messages")
     parser.add_argument("--version", action="version",
-                        version=f"{app_name} {app_version}",
+                        version=f"{App.NAME} {App.VERSION}",
                         help="Print version information")
     args = parser.parse_args()
     # parser.print_help()
@@ -416,7 +419,6 @@ import argparse
 )
 
 t_argtable_cmd = TemplateX(
-#    dependecies=[t_application],
     imports_text="""\
 import argparse
 """,
@@ -432,11 +434,11 @@ def cmd_cmd1():
                           help="Print debug messages")
     p_parser.add_argument("--version", action="version",
                           help="Print version information",
-                          version=f"{app_name} {app_version}")
+                          version=f"{App.NAME} {App.VERSION}")
 
     parser = argparse.ArgumentParser(
-        prog=app_name,
-        description=app_description,
+        prog=App.NAME,
+        description=App.DESCRIPTION,
         epilog="",
         parents=[p_parser]
         )
@@ -482,22 +484,21 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar,\\
 """,
     variables_text="""
 # Qt main window settings
-win_title = app_name
-#win_icon="myicon.png"
+win_title = App.NAME
 win_x_size = 320
 win_y_size = 240
 """,
     code_text="""\
 about_html=f\"\"\"
-<center><h2>{app_name}</h2></center>
+<center><h2>{App.NAME}</h2></center>
 <br>
-<b>Version: </b>{app_version}
+<b>Version: </b>{App.VERSION}
 <br>
-<b>Author: </b>{app_author}
+<b>Author: </b>{App.AUTHOR}
 <br>
 <hr>
 <br>
-{app_description}
+{App.DESCRIPTION}
 <br>
 \"\"\"
 
@@ -506,7 +507,7 @@ class AboutDialog(QDialog):
     def __init__(self, parent = None):
         super(AboutDialog, self).__init__(parent)
 
-        self.setWindowTitle(app_name)
+        self.setWindowTitle(App.NAME)
         self.setWindowModality(Qt.ApplicationModal)
         self.resize(400, 300)
 
@@ -540,7 +541,7 @@ class MainWindow(QMainWindow):
 
         self.resize(win_y_size, win_y_size)
         self.setWindowTitle(win_title)
-        #self.setWindowIcon(QIcon(app_icon))
+        #self.setWindowIcon(QIcon(App.ICON))
 
         # Create central widget
         self.centralwidget = QWidget(self)
@@ -625,7 +626,7 @@ from gi.repository import Gtk
     code_text="""\
 class MainWindow(Gtk.Window):
     def __init__(self):
-        super().__init__(title=app_name)
+        super().__init__(title=App.NAME)
 
 
 """,

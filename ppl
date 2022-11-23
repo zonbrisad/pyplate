@@ -243,19 +243,6 @@ cls() { ##D Create a local settings
 }
 
 
-
-
-##C- DEV GUI Templates
-
-newqt() { ##C DEV Create new QT5 python project 
-  createProject "Creating new Qt5 python project" ${BP_DIR}/pyplate-qt5.py
-}
-
-newgtk() { ##C DEV Create new GTK python project
-  :
-}
-
-
 ##C- DEV Template edit
 
 eb() { ##C DEV Edit basic template
