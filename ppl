@@ -258,6 +258,11 @@ eh() { ##C DEV Edit header
   bpEdit ${TEMPLATES}/header
 }
 
+ep() { ##C DEV Edit ppltemplate.py
+  bpEdit "${BP_DIR}/ppltemplate.py"
+}
+
+
 ##C- DEV Setup
 
 install() { ##C DEV Install init module
