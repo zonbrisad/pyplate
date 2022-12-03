@@ -258,7 +258,7 @@ eh() { ##C DEV Edit header
 }
 
 ep() { ##C DEV Edit ppltemplate.py
-  bpEdit "${BP_DIR}/ppltemplate.py" "$2"
+  bpEdit "${BP_SELF_DIR}/ppltemplate.py" "$2"
 }
 
 
@@ -271,7 +271,7 @@ install() { ##D Install init module
 ##C- DEV Project management (git)
 
 clean() { ##C DEV Remove leftover files 
-  bpCd "${BP_DIR}"
+  bpCd "${BP_SELF_DIR}"
 
   find . -name "*~"     -delete
   find . -name "*.orig" -delete
@@ -282,14 +282,14 @@ clean() { ##C DEV Remove leftover files
 }
 
 commit() { ##C DEV Commit project to repository
-  bpCd "${BP_DIR}"
+  bpCd "${BP_SELF_DIR}"
   git commit -a
   #git push --tags -a
   bpCd - 
 }
 
 tag() { ##C DEV Make a new tag
-  bpCd "${BP_DIR}"
+  bpCd "${BP_SELF_DIR}"
   # List existing tags
   git tag
 
@@ -303,13 +303,13 @@ tag() { ##C DEV Make a new tag
 }
 
 push() { ##C DEV Push project to GITHUB
-  bpCd "${BP_DIR}"
+  bpCd "${BP_SELF_DIR}"
   git push --progress
   bpCd - 
 } 
 
 pull() { ##C DEV Pull project from GITHUB
-  bpCd "${BP_DIR}"
+  bpCd "${BP_SELF_DIR}"
   git pull --progress
   bpCd - 
 } 

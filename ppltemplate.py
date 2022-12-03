@@ -46,9 +46,21 @@ AppVersion = "0.3"
 AppLicense = "MIT"
 AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
 
-
 # Absolute path to script itself
 self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+
+
+class App:
+    NAME = "mpterm"
+    VERSION = "0.2"
+    DESCRIPTION = "MpTerm is a simple serial terminal program"
+    LICENSE = ""
+    AUTHOR = "Peter Malmberg"
+    EMAIL = "peter.malmberg@gmail.com"
+    ORG = ""
+    HOME = "github.com/zonbrisad/mpterm"
+    ICON = f"{self_dir}/icons/mp_icon2.png"
+
 
 template_dir = f"{self_dir}/pyplate"
 # readme_md = f"{template_dir}/README.md"
@@ -100,6 +112,7 @@ class TConf:
     has_separators: bool = False
     has_argparse: bool = False
     has_argparse_sub: bool = False
+    has_debug: bool = False
 
     def __init__(self, args: argparse.ArgumentParser) -> None:
         self.args = args
@@ -125,7 +138,7 @@ class TConf:
         if getattr(self.args, attribute) is not None:  # If command line arguments are present use them
             setattr(self, attribute, getattr(self.args, attribute))
         else:
-            setattr(self, attribute, 
+            setattr(self, attribute,
                     Query.read_string(question, os.getenv(env)))
 
 
@@ -197,6 +210,9 @@ class Template(TemplateX):
 
         for x in self.pre:
             self.add(x)
+
+        if Query.read_bool("Include logging?", default=True):
+            self.add(t_logging)
 
         if Query.read_bool("Include argparse?", default=True):
             if Query.read_bool("Argparse with subcommands?", default=False):
@@ -414,7 +430,7 @@ import argparse
                         version=f"{App.NAME} {App.VERSION}",
                         help="Print version information")
     args = parser.parse_args()
-    # parser.print_help()
+    parser.print_help()
 """
 )
 
@@ -466,7 +482,8 @@ t_logging = TemplateX(
 import logging
 """,
     main_func_text="""\
-    logging.basicConfig
+    logging_format = "[%(levelname)s] %(lineno)d %(funcName)s() : %(message)s"
+    logging.basicConfig(format=logging_format, level=logging.DEBUG)
 """
 )
 
@@ -681,10 +698,10 @@ def cmd_newa(args):
 
 def cmd_newm(args):
     conf = TConf(args)
-    conf.has_main = False
+    conf.has_main = True
     conf.has_main_application = False
 
-    template = Template(conf, [t_application], [])
+    template = Template(conf, [], [])
     template.generate()
     template.write()
 
@@ -822,7 +839,7 @@ def main() -> None:
                                        help="Create a new python file")
     parser_new.set_defaults(func=cmd_new)
     parser_new = subparsers.add_parser("newm", parents=[parrent_parser],
-                                       help="Create a new minimal python file without main")
+                                       help="Create a new minimal python file")
     parser_new.set_defaults(func=cmd_newm)
     parser_new = subparsers.add_parser("newa", parents=[parrent_parser],
                                        help="Create a new application")
