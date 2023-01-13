@@ -596,7 +596,7 @@ class MainWindow(QMainWindow):
 
         self.actionAbout = QAction("About", self)
         self.actionAbout.setStatusTip("About")
-        self.actionAbout.triggered.connect(self.about)
+        self.actionAbout.triggered.connect(lambda: AboutDialog.about())
         self.menuHelp.addAction(self.actionAbout)
 
         # Statusbar
@@ -616,9 +616,6 @@ class MainWindow(QMainWindow):
 
     def open(self):
         files = QFileDialog.getOpenFileNames(self, "Open file", ".", "*.*")
-
-    def about(self):
-        AboutDialog.about()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.exit()
@@ -696,7 +693,17 @@ def cmd_newa(args):
         template.write()
 
 
-def cmd_newm(args):
+def cmd_newmod(args):
+    conf = TConf(args)
+    conf.has_main = True
+    conf.has_main_application = False
+
+    template = Template(conf, [], [])
+    template.generate()
+    template.write()
+
+    
+def cmd_newmin(args):
     conf = TConf(args)
     conf.has_main = True
     conf.has_main_application = False
@@ -838,9 +845,13 @@ def main() -> None:
     parser_new = subparsers.add_parser("new", parents=[parrent_parser],
                                        help="Create a new python file")
     parser_new.set_defaults(func=cmd_new)
+
     parser_new = subparsers.add_parser("newm", parents=[parrent_parser],
+                                       help="Create a new python module")
+    parser_new.set_defaults(func=cmd_newmod)
+    parser_new = subparsers.add_parser("newmin", parents=[parrent_parser],
                                        help="Create a new minimal python file")
-    parser_new.set_defaults(func=cmd_newm)
+    parser_new.set_defaults(func=cmd_newmin)
     parser_new = subparsers.add_parser("newa", parents=[parrent_parser],
                                        help="Create a new application")
     parser_new.set_defaults(func=cmd_newa)
