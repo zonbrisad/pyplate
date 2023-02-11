@@ -556,7 +556,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
 
-        self.resize(win_y_size, win_y_size)
+        self.resize(win_x_size, win_y_size)
         self.setWindowTitle(win_title)
         #self.setWindowIcon(QIcon(App.ICON))
 
