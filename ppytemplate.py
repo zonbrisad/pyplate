@@ -152,6 +152,15 @@ class ClassTemplate():
     _str: str = ""
     _eq: str = ""
     vars = None
+    text: str = ""
+    methods_text: str = ""
+    init_text: str  = ""
+
+
+    def add(self, a: ClassTemplate):
+        self.methods_text += a.methods_text
+        self.init_text += a.methods_text
+        pass
 
     def add_var(self, name, type="", default=""):
         if self.vars is None:
@@ -177,6 +186,18 @@ class ClassTemplate():
 
         return str
 
+    def generate(self):
+        self.text = f"class {self.name}({self.parrent})"
+
+        self.text = f"    def __init__(self) -> None:"
+        pass
+
+
+qt5mainwin = ClassTemplate(
+    name="MainWin",
+    parrent="QMainWindow"
+    
+)
 
 class Template(TemplateX):
     """docstring for template."""
@@ -653,230 +674,9 @@ class MainWindow(Gtk.Window):
 )
 
 
-def create_project(template: Template):
-
-    if Query.read_bool("Do you want to create a project?", False):
-        proj = ProjectGenerator()
-        proj.project_name = template.conf.name
-        proj.query()
-        proj.create()
-        proj.git_add(template.write(proj.project_dir))
-        proj.commit()
-        return True
-
-    return False
-
-
-def cmd_new(args):
-    conf = TConf(args)
-    conf.has_main = True
-    conf.has_main_application = True
-    conf.has_separators = True
-
-    template = Template(conf, [], [])
-    template.generate()
-
-    if not create_project(template):
-        template.write()
-
-
-def cmd_newa(args):
-    conf = TConf(args)
-    conf.has_main = False
-    conf.has_main_application = True
-    conf.has_separators = True
-
-    template = Template(conf, [t_application], [])
-    template.generate()
-
-    if not create_project(template):
-        template.write()
-
-
-def cmd_newmod(args):
-    conf = TConf(args)
-    conf.has_main = True
-    conf.has_main_application = False
-
-    template = Template(conf, [], [])
-    template.generate()
-    template.write()
-
-    
-def cmd_newmin(args):
-    conf = TConf(args)
-    conf.has_main = True
-    conf.has_main_application = False
-
-    template = Template(conf, [], [])
-    template.generate()
-    template.write()
-
-
-def cmd_newqt(args):
-    conf = TConf(args)
-    conf.has_main = False
-    conf.has_main_application = True
-    conf.has_separators = True
-
-    template = Template(conf, [t_application], [t_qt5])
-    template.generate()
-
-    if not create_project(template):
-        template.write()
-
-
-def cmd_newgtk(args):
-    conf = TConf(args)
-    conf.has_main = False
-    conf.has_main_application = True
-    conf.has_separators = True
-    template = Template(conf, [t_application], [t_gtk])
-    template.generate()
-
-    if not create_project(template):
-        template.write()
-
-
-def cmd_newp(args):
-    proj = ProjectGenerator()
-    proj.query()
-    proj.create()
-    proj.commit()
-
-
-class Settings:
-    SETTINGS_DIR = "~/.config/pyplate"
-    SETTINGS_FILE = "pyplate.json"
-
-    def __init__(self) -> None:
-        with open("pyplate/pyplate.json") as f:
-            data = json.load(f)
-
-        print(data)
-
-    def create(self) -> None:
-        # Create personal settings
-        pass
-
 
 def main() -> None:
-
-    # logging.basicConfig(level=logging.DEBUG,
-    #                     format="[%(levelname)s]%(asctime)s %(message)s")
-
-    parrent_parser = argparse.ArgumentParser(add_help=False)
-    parrent_parser.add_argument("--name",
-                                type=str,
-                                help="Name of Python module"
-                                )
-    parrent_parser.add_argument("--description",
-                                type=str,
-                                help="Brief description"
-                                )
-    parrent_parser.add_argument("--author",
-                                type=str,
-                                help="Name of author"
-                                )
-    parrent_parser.add_argument("--email",
-                                type=str,
-                                help="Email of author"
-                                )
-    parrent_parser.add_argument("--project",
-                                type=str,
-                                help="Name of project"
-                                )
-    # parrent_parser.add_argument("--license",
-    #                             type=str,
-    #                             help="License of new file",
-    #                             default=conf.license)
-
-    parrent_parser.add_argument("--main",
-                                action="store_true",
-                                help="Add main function block",
-                                default=False)
-    parrent_parser.add_argument("--header",
-                                type=argparse.FileType("r"),
-                                help="Include external header"
-                                )
-    parrent_parser.add_argument("--dir",
-                                type=str,
-                                help="Project source directory",
-                                default=".")
-    parrent_parser.add_argument("--basedir",
-                                type=str,
-                                help="Project directory",
-                                default=".")
-    parrent_parser.add_argument("--write",
-                                action="store_true",
-                                help="Write file to disk",
-                                default=False)
-    parrent_parser.add_argument("--printheader",
-                                action="store_true",
-                                help="Print default header to stdout",
-                                default=False)
-    parrent_parser.add_argument("--separators",
-                                action="store_true",
-                                help="Add code separators",
-                                default=False)
-#    parrent_parser.add_argument("--outfile",
-#                                type=argparse.FileType("w",0),
-#                                help="Write template to file")
-    parrent_parser.add_argument("--debug",
-                                action="store_true",
-                                help="Print debug information")
-    parrent_parser.add_argument("--version",
-                                action="version",
-                                help="Print application version",
-                                version=AppVersion)
-
-    # options parsing
-    parser = argparse.ArgumentParser(
-            prog=AppName,
-            description="Pyplate python template generator",
-            epilog="Pyplate <https://github.com/zonbrisad/pyplate.git>",
-            parents=[parrent_parser],
-        )
-
-    subparsers = parser.add_subparsers(title="Commands",
-                                       help="",
-                                       description="")
-                                       
-    parser_new = subparsers.add_parser("new", parents=[parrent_parser],
-                                       help="Create a new python file")
-    parser_new.set_defaults(func=cmd_new)
-
-    parser_new = subparsers.add_parser("newm", parents=[parrent_parser],
-                                       help="Create a new python module")
-    parser_new.set_defaults(func=cmd_newmod)
-    parser_new = subparsers.add_parser("newmin", parents=[parrent_parser],
-                                       help="Create a new minimal python file")
-    parser_new.set_defaults(func=cmd_newmin)
-    parser_new = subparsers.add_parser("newa", parents=[parrent_parser],
-                                       help="Create a new application")
-    parser_new.set_defaults(func=cmd_newa)
-    parser_new = subparsers.add_parser("newqt", parents=[parrent_parser],
-                                       help="Create a new QT5 application")
-    parser_new.set_defaults(func=cmd_newqt)
-    parser_new = subparsers.add_parser("newgtk", parents=[parrent_parser],
-                                       help="Create a new GTK3+ application")
-    parser_new.set_defaults(func=cmd_newgtk)
-    parser_new = subparsers.add_parser("newp", parents=[parrent_parser],
-                                       help="Create python project")
-    parser_new.set_defaults(func=cmd_newp)
-
-    args = parser.parse_args()
-
-    if hasattr(args, "func"):
-        args.func(args)
-        exit(0)
-
-    if args.printheader:
-        print(t_header.header_text)
-        exit(0)
-
-    parser.print_help()
-
+    pass
 
 if __name__ == "__main__":
     try:
