@@ -26,74 +26,26 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
-import traceback
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
 
 from git import Repo
 
 from bashplates import Bp
-from query import Query
 
 # Settings ------------------------------------------------------------------
 
-AppName = "mptemplate"
-AppVersion = "0.3"
-AppLicense = "MIT"
-AppAuthor = "Peter Malmberg <peter.malmberg@gmail.com>"
-
-# Absolute path to script itself
-self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
-
-
-class App:
-    NAME = "mpterm"
-    VERSION = "0.2"
-    DESCRIPTION = "MpTerm is a simple serial terminal program"
-    LICENSE = ""
-    AUTHOR = "Peter Malmberg"
-    EMAIL = "peter.malmberg@gmail.com"
-    ORG = ""
-    HOME = "github.com/zonbrisad/mpterm"
-    ICON = f"{self_dir}/icons/mp_icon2.png"
-
-
-template_dir = f"{self_dir}/pyplate"
-# readme_md = f"{template_dir}/README.md"
 
 # Code ----------------------------------------------------------------------
 
 
 @dataclass
-class TemplateX:
-    text: str = ""
-    preamble_text: str = ""
-    header_text: str = ""
-    imports_text: str = ""
-    variables_text: str = ""
-    code_text: str = ""
-    main_func_text: str = ""
-    main_text: str = ""
-
-#    dependencies: List[TemplateX] = field(default_factory=list)
-
-    def add(self, a: TemplateX):
-        self.preamble_text += a.preamble_text
-        self.header_text += a.header_text
-        self.imports_text += a.imports_text
-        self.variables_text += a.variables_text
-        self.code_text += a.code_text
-        self.main_func_text += a.main_func_text
-        self.main_text += a.main_text
-
-
-@dataclass
 class TConf:
-    """Template configuration class"""
+    """PythonGenerator configuration class"""
+
     name: str = ""
     author: str = ""
     description: str = ""
@@ -128,85 +80,73 @@ class TConf:
 
         # if external header, read into var
         if self.args.header is not None:
-            self.header = TemplateX()
+            self.header = PythonTemplate()
             with self.args.header as f:
                 self.header.header_text = f.read()
         else:
             self.header = t_header
 
     def set_attribute(self, attribute: str, question: str, env: str):
-        if getattr(self.args, attribute) is not None:  # If command line arguments are present use them
+        if (
+            getattr(self.args, attribute) is not None
+        ):  # If command line arguments are present use them
             setattr(self, attribute, getattr(self.args, attribute))
         else:
-            setattr(self, attribute,
-                    Query.read_string(question, os.getenv(env)))
+            setattr(self, attribute, Bp.read_string(question, os.getenv(env)))
 
 
 @dataclass
-class ClassTemplate():
-    name: str = ""
-    parrent: str = ""
-    methods: str = ""
-    dataclass: bool = False
-    _init: str = ""
-    _str: str = ""
-    _eq: str = ""
-    vars = None
+class PythonTemplate:
     text: str = ""
-    methods_text: str = ""
-    init_text: str  = ""
+    preamble_text: str = ""
+    header_text: str = ""
+    imports_text: str = ""
+    variables_text: str = ""
+    code_text: str = ""
+    main_func_text: str = ""
+    main_text: str = ""
+
+    query_text: str = ""
+    do_query: bool = True
+    include: bool = True
+
+    classes: list[ClassTemplate] = field(default_factory=list)
+    sub: list[PythonTemplate] = field(default_factory=list)
+
+    def add(self, tmpl: PythonTemplate):
+        self.preamble_text += tmpl.preamble_text
+        self.header_text += tmpl.header_text
+        self.imports_text += tmpl.imports_text
+        self.variables_text += tmpl.variables_text
+        self.code_text += tmpl.code_text
+        self.main_func_text += tmpl.main_func_text
+        self.main_text += tmpl.main_text
+
+    def query(self):
+        if self.do_query is True:
+            self.include = Bp.read_bool(self.query_text, self.include)
+
+        if self.include is True:
+            for tmpl in self.sub:
+                tmpl.query()
+
+            for cl in self.classes:
+                cl.query()
+
+    def gen(self):
+        # pass
+        for cl in self.classes:
+            tmpl = cl.generate()
+            self.add(tmpl)
 
 
-    def add(self, a: ClassTemplate):
-        self.methods_text += a.methods_text
-        self.init_text += a.methods_text
-        pass
-
-    def add_var(self, name, type="", default=""):
-        if self.vars is None:
-            self.vars = []
-
-        self.vars.append({name, type, default})
-
-    def __str__(self) -> str:
-        if self.vars is None:
-            self.vars = []
-
-        str = ""
-        if self.dataclass:
-            str = "@dataclass\n"
-
-        if self.parrent == "":
-            str += f"class {self.name}:"
-        else:
-            str = f"class {self.name}({self.parrent}):"
-
-        for v in self.vars:
-            str += f"    {v[0]}"
-
-        return str
-
-    def generate(self):
-        self.text = f"class {self.name}({self.parrent})"
-
-        self.text = f"    def __init__(self) -> None:"
-        pass
-
-
-qt5mainwin = ClassTemplate(
-    name="MainWin",
-    parrent="QMainWindow"
-    
-)
-
-class Template(TemplateX):
+class PythonGenerator(PythonTemplate):
     """docstring for template."""
 
-    def __init__(self, conf: TConf, pre: List[TemplateX], post: List[TemplateX]):
+    def __init__(self, conf: TConf, pre: List[PythonTemplate]):
         super().__init__()
         self.conf = conf
         self.pre = pre
-        self.post = post
 
     def clear(self):
         self.text = ""
@@ -216,38 +156,24 @@ class Template(TemplateX):
 
     def add_separator(self, header):
         if self.conf.has_separators:
-            self.text += f"\n# {header} {'-'*(75-len(header))}\n\n\n"
+            self.text += f"\n# {header} {'-'*(75-len(header))}\n\n"
         # else:
         #     self.text += "\n\n"
 
     def generate(self):
         self.clear()
 
-        if self.conf.has_preamble:
-            self.add(t_preamble)
-
-        if self.conf.has_header:
-            self.add(self.conf.header)
-
         for x in self.pre:
-            self.add(x)
+            x.query()
+            if x.include is True:
+                x.gen()
+                self.add(x)
 
-        if Query.read_bool("Include logging?", default=True):
-            self.add(t_logging)
-
-        if Query.read_bool("Include argparse?", default=True):
-            if Query.read_bool("Argparse with subcommands?", default=False):
-                self.add(t_argtable_cmd)
-            else:
-                self.add(t_argtable)
-
-        if self.conf.has_main_application:
-            self.add(t_main_application)
-        elif self.conf.has_main:
-            self.add(t_main)
-
-        for x in self.post:
-            self.add(x)
+        # if Bp.read_bool("Include argparse?", default=True):
+        #     if Bp.read_bool("Argparse with subcommands?", default=False):
+        #         self.add(t_argtable_cmd)
+        #     else:
+        #         self.add(t_argtable)
 
         self.text += self.preamble_text
         self.text += self.header_text
@@ -258,14 +184,8 @@ class Template(TemplateX):
         self.add_separator("Code")
         self.text += self.code_text
 
-        if self.conf.has_main or self.conf.has_main_application:
-            self.text += "def main() -> None:\n"
-            if self.main_func_text == "":
-                self.text += "    pass"
-            else:
-                self.text += self.main_func_text
-            self.text += "\n\n"
-            self.text += self.main_text
+        self.text += self.main_func_text
+        self.text += self.main_text
 
         self.replace("__NAME__", self.conf.name)
         self.replace("__DESCRIPTION__", self.conf.description)
@@ -294,85 +214,115 @@ class Template(TemplateX):
         return self.text
 
 
-def print_info():
-    print("Script name    " + AppName)
-    print("Script version " + AppVersion)
-    print("Script path    " + os.path.realpath(__file__))
-
-
 @dataclass
-class ProjectGenerator:
-    create_subdir: bool = True
-    create_git: bool = True
-    create_gitignore: bool = True
-    create_readme: bool = True
-    create_history: bool = True
-    project_name: str = ""
-    project_dir: str = ""
-    subdir_name: str = ""
+class ClassTemplate:
+    name: str = ""
+    parrent: str = ""
+    methods: str = ""
+    is_dataclass: bool = False
+    decorator_text: str = ""
+    vars_text: str = ""
+    methods_text: str = ""
+    init_text: str = ""
+    text: str = ""
+
+    query_text: str = ""
+    do_query: bool = True
+    include: bool = False
+
+    sub: list[ClassTemplate] = field(default_factory=list)
+
+    def __add__(self, other):
+        self.vars_text += other.vars_text
+        self.methods_text += other.methods_text
+        self.init_text += other.init_text
+        return self
+
+    def __str__(self) -> str:
+        return self.text
 
     def query(self):
-        self.project_dir = os.getcwd()
-        self.project_name = Query.read_string("Project name?", self.project_name)
-        self.create_subdir = Query.read_bool("Create subdirectory?",
-                                             default=self.create_subdir)
-        if (self.create_subdir):
-            self.subdir_name = Query.read_string("Name of subdirectory?",
-                                                 default=self.project_name)
+        if self.do_query is True:
+            self.include = Bp.read_bool(self.query_text, self.include)
 
-        self.create_git = Query.read_bool("Initiate git repository?",
-                                          default=self.create_git)
+        if self.include is True:
+            for tmpl in self.sub:
+                tmpl.query()
 
-        if (self.create_git):
-            self.create_gitignore = Query.read_bool("Create .gitignore?",
-                                                    default=self.create_gitignore)
-            self.create_readme = Query.read_bool("Create README.md?",
-                                                 default=self.create_readme)
-            self.create_history = Query.read_bool("Create HISTORY.md?",
-                                                  default=self.create_history)
+    def gen(self):
+        if self.include is True:
+            for tmpl in self.sub:
+                tmpl.gen()
+                if tmpl.include is True:
+                    self += tmpl
 
-    def git_add(self, file: str) -> None:
-        if self.create_git:
-            self.repo.index.add(file)
+    def generate(self) -> PythonTemplate:
+        self.text = f"class {self.name}({self.parrent}):\n"
 
-    def create(self):
-        if self.create_subdir:
-            self.project_dir = f"{self.project_dir}/{self.subdir_name}"
-            if not Bp.mkdir(self.project_dir):
-                exit()
+        for tmpl in self.sub:
+            # tmpl.query()
+            if tmpl.include is True:
+                tmpl.gen()
+                self += tmpl
 
-        f_readme = f"{self.project_dir}/README.md"
-        f_history = f"{self.project_dir}/HISTORY.md"
-        f_gitignore = f"{self.project_dir}/.gitignore"
-
-        if self.create_git:
-            self.repo = Repo.init(self.project_dir)
-
-            if self.create_readme:
-                Bp.cp(f"{template_dir}/README.md", f_readme)
-                self.git_add(f_readme)
-
-            if self.create_history:
-                Bp.cp(f"{template_dir}/HISTORY.md", f_history)
-                self.git_add(f_history)
-
-            if self.create_gitignore:
-                Bp.cp(f"{template_dir}/gitignore", f_gitignore)
-                self.git_add(f_gitignore)
-
-    def commit(self):
-        if self.create_git:
-            self.repo.index.commit("Initial commit")
+        self.text += self.vars_text
+        self.text += self.init_text
+        self.text += self.methods_text
+        self.text += "\n\n"
+        return PythonTemplate(code_text=self.text)
 
 
-t_preamble = TemplateX(
-    preamble_text="""\
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+class ClassGenerator(ClassTemplate):
+    def __init__(self, l):
+        super().__init__()
+        self.ll = l
+
+    def subs(self):
+        pass
+
+    def generate(self) -> PythonTemplate:
+        # if self.is_dataclass:
+        #     self.add(dataclass_decorator)
+
+        first = self.ll[0]
+
+        self.text = f"class {first.name}({first.parrent}):\n"
+
+        for tmpl in self.ll:
+            tmpl.query()
+            if tmpl.include is True:
+                tmpl.gen()
+                self += tmpl
+                # self.add(tmpl)
+            # if tmpl.include is True:
+            #     self.add(tmpl)
+
+        self.text += self.vars_text
+        self.text += self.init_text
+        self.text += self.methods_text
+        self.text += "\n\n"
+
+        return PythonTemplate(code_text=self.text)
+
+
+dataclass_decorator = ClassTemplate(
+    decorator_text="""\
+@dataclass
 """
 )
 
-t_header = TemplateX(
+t_preamble = PythonTemplate(
+    do_query=False,
+    query_text="Inlcude preamble?",
+    preamble_text="""\
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+""",
+)
+
+t_header = PythonTemplate(
+    do_query=False,
+    query_text="Include header?",
     header_text="""\
 # ----------------------------------------------------------------------------
 #
@@ -386,23 +336,45 @@ t_header = TemplateX(
 # Python:   >= 3.0
 #
 # ----------------------------------------------------------------------------
-"""
+""",
 )
 
-t_main = TemplateX(
+t_main_simple = PythonTemplate(
+    query_text="Include main function?",
+    do_query=False,
+    main_func_text="""\
+
+
+def main() -> None:
+    pass
+""",
     main_text="""\
+
+
 if __name__ == "__main__":
     main()
-"""
+
+
+""",
 )
 
-t_main_application = TemplateX(
+
+t_main = PythonTemplate(
+    query_text="Include main function?",
+    do_query=False,
     imports_text="""\
 import traceback
 import os
 import sys
 """,
+    main_func_text="""\
+
+
+def main() -> None:
+""",
     main_text="""\
+
+
 if __name__ == "__main__":
     try:
         main()
@@ -416,26 +388,34 @@ if __name__ == "__main__":
         print(str(e))
         traceback.print_exc()
         os._exit(1)
-"""
+
+
+""",
 )
 
-t_application = TemplateX(
+
+t_application = PythonTemplate(
+    do_query=False,
+    query_text="Include application data?",
     variables_text="""\
 class App:
     NAME = "__NAME__"
     VERSION = "0.01"
     DESCRIPTION = "__DESCRIPTION__"
     LICENSE = ""
+    COPYRIGHT = ""
     AUTHOR = "__AUTHOR__"
     EMAIL = "__EMAIL__"
     ORG = "__ORGANISATION__"
     HOME = ""
     ICON = ""
 
-"""
+
+""",
 )
 
-t_argtable = TemplateX(
+t_argtable = PythonTemplate(
+    query_text="Include argparser?",
     imports_text="""\
 import argparse
 """,
@@ -451,11 +431,12 @@ import argparse
                         version=f"{App.NAME} {App.VERSION}",
                         help="Print version information")
     args = parser.parse_args()
-    parser.print_help()
-"""
+    #parser.print_help()
+
+""",
 )
 
-t_argtable_cmd = TemplateX(
+t_argtable_cmd = PythonTemplate(
     imports_text="""\
 import argparse
 """,
@@ -493,114 +474,76 @@ def cmd_cmd1():
         args.func()
         exit(0)
 
-    parser.print_help()
-"""
+    #parser.print_help()
+
+""",
 )
 
-
-t_logging = TemplateX(
+t_logging = PythonTemplate(
+    query_text="Include logging?",
     imports_text="""\
 import logging
 """,
     main_func_text="""\
     logging_format = "[%(levelname)s] %(lineno)d %(funcName)s() : %(message)s"
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
-"""
+
+""",
 )
 
-
-t_qt5 = TemplateX(
-#    dependecies=[t_application],
-    imports_text="""\
-from PyQt5.QtCore import Qt, QTimer, QSettings, QIODevice
-from PyQt5.QtGui import QIcon, QCloseEvent
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar,\\
-                            QAction, QStatusBar, QDialog, QVBoxLayout,\\
-                            QHBoxLayout, QTextEdit, QDialogButtonBox,\\
-                            QPushButton, QMessageBox, QWidget, QLabel,\\
-                            QFileDialog, QSpacerItem, QSizePolicy
-""",
-    variables_text="""
-# Qt main window settings
-win_title = App.NAME
-win_x_size = 320
-win_y_size = 240
-""",
-    code_text="""\
-about_html=f\"\"\"
-<center><h2>{App.NAME}</h2></center>
-<br>
-<b>Version: </b>{App.VERSION}
-<br>
-<b>Author: </b>{App.AUTHOR}
-<br>
-<hr>
-<br>
-{App.DESCRIPTION}
-<br>
-\"\"\"
+# about_html=f\"\"\"
+# <center><h2>{App.NAME}</h2></center>
+# <br>
+# <b>Version: </b>{App.VERSION}
+# <br>
+# <b>Author: </b>{App.AUTHOR}
+# <br>
+# <hr>
+# <br>
+# {App.DESCRIPTION}
+# <br>
+# \"\"\"
 
 
-class AboutDialog(QDialog):
-    def __init__(self, parent = None):
-        super(AboutDialog, self).__init__(parent)
+# class AboutDialog(QDialog):
+#     def __init__(self, parent = None):
+#         super(AboutDialog, self).__init__(parent)
 
-        self.setWindowTitle(App.NAME)
-        self.setWindowModality(Qt.ApplicationModal)
-        self.resize(400, 300)
+#         self.setWindowTitle(App.NAME)
+#         self.setWindowModality(Qt.ApplicationModal)
+#         self.resize(400, 300)
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setSpacing(2)
-        self.setLayout(self.verticalLayout)
+#         self.verticalLayout = QVBoxLayout(self)
+#         self.verticalLayout.setSpacing(2)
+#         self.setLayout(self.verticalLayout)
 
-        # TextEdit
-        self.textEdit = QTextEdit(self)
-        self.textEdit.setReadOnly(True)
-        self.verticalLayout.addWidget(self.textEdit)
-        self.textEdit.insertHtml(about_html)
+#         # TextEdit
+#         self.textEdit = QTextEdit(self)
+#         self.textEdit.setReadOnly(True)
+#         self.verticalLayout.addWidget(self.textEdit)
+#         self.textEdit.insertHtml(about_html)
 
-        # Buttonbox
-        self.buttonBox = QDialogButtonBox(self)
-        self.buttonBox.setStandardButtons( QDialogButtonBox.Ok )
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.setCenterButtons(True)
-        self.verticalLayout.addWidget(self.buttonBox)
+#         # Buttonbox
+#         self.buttonBox = QDialogButtonBox(self)
+#         self.buttonBox.setStandardButtons( QDialogButtonBox.Ok )
+#         self.buttonBox.accepted.connect(self.accept)
+#         self.buttonBox.setCenterButtons(True)
+#         self.verticalLayout.addWidget(self.buttonBox)
 
-    @staticmethod
-    def about(parent = None):
-        dialog = AboutDialog(parent)
-        result = dialog.exec_()
-        return (result == QDialog.Accepted)
+#     @staticmethod
+#     def about(parent = None):
+#         dialog = AboutDialog(parent)
+#         result = dialog.exec_()
+#         return (result == QDialog.Accepted)
 
 
-class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+qt5_menuitems = ClassTemplate(
+    query_text="Qt5: Include menu items?",
+    init_text="""\
 
-        self.resize(win_y_size, win_y_size)
-        self.setWindowTitle(win_title)
-        #self.setWindowIcon(QIcon(App.ICON))
-
-        # Create central widget
-        self.centralwidget = QWidget(self)
-        self.setCentralWidget(self.centralwidget)
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setSpacing(2)
-
-        # TextEdit
-        self.textEdit = QTextEdit(self.centralwidget)
-        self.verticalLayout.addWidget(self.textEdit)
-
-        # Menubar
-        self.menubar = QMenuBar(self)
-        self.setMenuBar(self.menubar)
-
-        # Menus
+        # Menuitems
         self.menuFile = QMenu("File", self.menubar)
         self.menubar.addAction(self.menuFile.menuAction())
-
-        self.menuHelp = QMenu("Help", self.menubar)
-        self.menubar.addAction(self.menuHelp.menuAction())
 
         self.actionOpen = QAction("Open", self)
         self.actionOpen.setStatusTip("Open file")
@@ -612,21 +555,14 @@ class MainWindow(QMainWindow):
         self.actionQuit = QAction("Quit", self)
         self.actionQuit.setStatusTip("Quit application")
         self.actionQuit.setShortcut("Ctrl+Q")
-        self.actionQuit.triggered.connect(self.exit)
+        self.actionQuit.triggered.connect(self.quit)
         self.menuFile.addAction(self.actionQuit)
+""",
+    methods_text="""\
+    def open(self):
+        files = QFileDialog.getOpenFileNames(self, "Open file", ".", "*.*")
 
-        self.actionAbout = QAction("About", self)
-        self.actionAbout.setStatusTip("About")
-        self.actionAbout.triggered.connect(lambda: AboutDialog.about())
-        self.menuHelp.addAction(self.actionAbout)
-
-        # Statusbar
-        self.statusbar = QStatusBar(self)
-        self.statusbar.setLayoutDirection(Qt.LeftToRight)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
-
-    def exit(self):
+    def quit(self):
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Information)
         msgBox.setWindowTitle("Quit")
@@ -634,35 +570,217 @@ class MainWindow(QMainWindow):
         msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
         if msgBox.exec() == QMessageBox.Ok:
             self.close()
+        
+""",
+)
 
-    def open(self):
-        files = QFileDialog.getOpenFileNames(self, "Open file", ".", "*.*")
+qt5_menues = ClassTemplate(
+    query_text="Qt5: Include menubar?",
+    sub=[qt5_menuitems],
+    init_text="""\
 
-    def closeEvent(self, event: QCloseEvent) -> None:
-        self.exit()
-        return super().closeEvent(event)
+        # Menu bar
+        self.menubar = QMenuBar(self)
+        self.setMenuBar(self.menubar)
+    """,
+)
+
+qt5_statusbar = ClassTemplate(
+    query_text="Qt5: Include statusbar?",
+    init_text="""\
+
+        # Status bar
+        self.statusbar = QStatusBar(self)
+        self.statusbar.setLayoutDirection(Qt.LeftToRight)
+        self.setStatusBar(self.statusbar)
+""",
+)
+
+qt5_mainwin = ClassTemplate(
+    do_query=True,
+    include=True,
+    query_text="Qt5: Main window?",
+    name="MainWindow",
+    parrent="QMainWindow",
+    sub=[qt5_menues, qt5_statusbar],
+    init_text="""\
+    def __init__(self, parent=None) -> None:
+        super(MainWindow, self).__init__(parent)
+        self.resize(300,300)
+        self.setWindowTitle("Title")
+        #self.setWindowIcon(QIcon("my_icon_file"))
+        self.setIconSize(QSize(512, 512))
+
+        self.centralwidget = QWidget(self)
+        self.setCentralWidget(self.centralwidget)
+
+        self.mainLayout = QVBoxLayout(self.centralwidget)
+        self.mainLayout.setContentsMargins(2, 2, 2, 2)
+        self.mainLayout.setSpacing(2)
+""",
+    methods_text="""\
+
+    def closeEvent(self, ev: QCloseEvent) -> None:
+        return super().closeEvent(ev)
+""",
+)
 
 
+t_qt5 = PythonTemplate(
+    query_text="Qt5: Create main window?",
+    classes=[qt5_mainwin],
+    imports_text="""\
+from PyQt5.QtCore import QIODevice, QSettings, QSize, Qt, QTimer
+from PyQt5.QtGui import QCloseEvent, QIcon
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QDialogButtonBox,
+                             QFileDialog, QHBoxLayout, QLabel, QMainWindow,
+                             QMenu, QMenuBar, QMessageBox, QPushButton,
+                             QSizePolicy, QSpacerItem, QStatusBar, QTextEdit,
+                             QVBoxLayout, QWidget)
 """,
     main_func_text="""\
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
-"""
+""",
 )
 
-t_gtk = TemplateX(
+# qt5_menuitems = ClassTemplate(
+#     query_text="Qt5: Include menu items?",
+#     init_text="""\
+
+#         # Menuitems
+#         self.menuFile = QtWidgets.QMenu("File", self.menubar)
+#         self.menubar.addAction(self.menuFile.menuAction())
+
+#         self.actionOpen = QtWidgets.QAction("Open", self)
+#         self.actionOpen.setStatusTip("Open file")
+#         self.actionOpen.setShortcut("Ctrl+O")
+#         self.actionOpen.triggered.connect(self.open)
+#         self.menuFile.addAction(self.actionOpen)
+#         self.menuFile.addSeparator()
+
+#         self.actionQuit = QtWidgets.QAction("Quit", self)
+#         self.actionQuit.setStatusTip("Quit application")
+#         self.actionQuit.setShortcut("Ctrl+Q")
+#         self.actionQuit.triggered.connect(self.quit)
+#         self.menuFile.addAction(self.actionQuit)
+# """,
+#     methods_text="""\
+#     def open(self):
+#         pass
+
+#     def quit(self):
+#     msgBox = QMessageBox()
+# #         msgBox.setIcon(QMessageBox.Information)
+# #         msgBox.setWindowTitle("Quit")
+# #         msgBox.setText("Are you sure you want to quit?")
+# #         msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
+# #         if msgBox.exec() == QMessageBox.Ok:
+# #             self.close()
+#         self.close()
+
+# """,
+# )
+
+
+t_gtk = PythonTemplate(
+    query_text="GTK3 application?",
     imports_text="""\
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+gi.require_version('Notify', '0.7')
+from gi.repository import Gtk, GObject
 """,
+
     code_text="""\
 class MainWindow(Gtk.Window):
+
+    def add_menu_item(self, name: str, menu: Gtk.Menu) -> Gtk.MenuItem:
+        menu_item = Gtk.MenuItem(label=name)
+        menu.append(menu_item)
+        return menu_item
+
+    def add_menu(self, name: str, menubar: Gtk.MenuBar) -> Gtk.Menu:
+        menu = Gtk.Menu()
+        item = Gtk.MenuItem(label=name)
+        item.set_submenu(menu)
+        menubar.append(item)
+        return menu
+
+    def message(self, msg: str):
+        # Display a message in the status bar
+        context_id = self.statusbar.get_context_id("Status")
+        self.statusbar.push(context_id, msg)
+        if msg != "":
+            GObject.timeout_add(1000, lambda: self.message(""))
+
     def __init__(self):
         super().__init__(title=App.NAME)
+        self.set_default_size(200, 200)
 
+        # Main layout
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        self.add(main_box)
+
+        # Menubar
+        menubar = Gtk.MenuBar()
+        main_box.pack_start(menubar, False, False, 0)
+
+        # Main menu
+        file_menu = self.add_menu("File", menubar)
+        new_item = self.add_menu_item("New", file_menu)
+        open_item = self.add_menu_item("Open", file_menu)
+        open_item.connect("activate", self.on_open_dialog)
+        quit_item = self.add_menu_item("Quit", file_menu)
+        quit_item.connect("activate", self.quit)
+
+        help_menu = self.add_menu("Help", menubar)
+        about_item = self.add_menu_item("About", help_menu)
+        about_item.connect("activate", self.on_about_dialog)
+
+        # Create a status bar
+        self.statusbar = Gtk.Statusbar()
+        main_box.pack_end(self.statusbar, False, True, 0)
+
+    def quit(self, w):
+        Gtk.main_quit()
+
+    def on_open_dialog(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Please choose a file", parent=self, action=Gtk.FileChooserAction.OPEN
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK,
+        )
+
+        #self.add_filters(dialog)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            logging.debug("Open clicked")
+            logging.debug("File selected: " + dialog.get_filename())
+        elif response == Gtk.ResponseType.CANCEL:
+            logging.debug("Cancel clicked")
+
+        dialog.destroy()
+ 
+    def on_about_dialog(self, widget):
+        about = Gtk.AboutDialog()
+        #about.set_logo()
+        about.set_program_name(App.NAME)
+        about.set_version(App.VERSION)
+        about.set_authors(App.AUTHOR)
+        about.set_copyright(App.COPYRIGHT)
+        about.set_comments(App.DESCRIPTION)
+        about.set_website(App.HOME)
+        about.run()
+        about.destroy()
+       
 
 """,
     main_func_text="""\
@@ -670,24 +788,5 @@ class MainWindow(Gtk.Window):
     main_win.connect("destroy", Gtk.main_quit)
     main_win.show_all()
     Gtk.main()
-"""
+""",
 )
-
-
-
-def main() -> None:
-    pass
-
-if __name__ == "__main__":
-    try:
-        main()
-        sys.exit(0)
-    except KeyboardInterrupt as e:  # Ctrl-C
-        raise e
-    except SystemExit as e:        # sys.exit()
-        raise e
-    except Exception as e:
-        print('ERROR, UNEXPECTED EXCEPTION')
-        print(str(e))
-        traceback.print_exc()
-        os._exit(1)
