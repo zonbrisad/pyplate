@@ -110,17 +110,59 @@ class PythonTemplate:
     do_query: bool = True
     include: bool = True
 
-    classes: list[ClassTemplate] = field(default_factory=list)
+    sub_alt: bool = False
     sub: list[PythonTemplate] = field(default_factory=list)
 
-    def add(self, tmpl: PythonTemplate):
-        self.preamble_text += tmpl.preamble_text
-        self.header_text += tmpl.header_text
-        self.imports_text += tmpl.imports_text
-        self.variables_text += tmpl.variables_text
-        self.code_text += tmpl.code_text
-        self.main_func_text += tmpl.main_func_text
-        self.main_text += tmpl.main_text
+    class_name: str = ""
+    class_decorator_text: str = ""
+    class_is_dataclass: bool = False
+    class_parrent: str = ""
+    class_methods: str = ""
+    class_vars_text: str = ""
+    class_methods_text: str = ""
+    class_init_text: str = ""
+    class_text: str = ""
+
+    def clear(self):
+        self.text = ""
+
+    def replace(self, old: str, new: str):
+        self.text = self.text.replace(old, new)
+
+    def add(self, other: PythonTemplate):
+        self.preamble_text += other.preamble_text
+        self.header_text += other.header_text
+        self.imports_text += other.imports_text
+        self.variables_text += other.variables_text
+        self.code_text += other.code_text
+        self.main_func_text += other.main_func_text
+        self.main_text += other.main_text
+
+        self.class_name += other.class_name
+        self.class_parrent += other.class_parrent
+        self.class_vars_text += other.class_vars_text
+        self.class_methods_text += other.class_methods_text
+        self.class_init_text += other.class_init_text
+
+    def sumarize(self):
+        self.text += self.preamble_text
+        self.text += self.header_text
+        #self.add_separator("Imports")
+        self.text += self.imports_text
+        #self.add_separator("Variables")
+        self.text += self.variables_text
+
+        if self.class_name != "":
+            self.text += f"class {self.class_name}({self.class_parrent}):\n"
+        self.text += self.class_vars_text
+        self.text += self.class_methods_text
+        self.text += self.class_init_text
+        
+        #self.add_separator("Code")
+        self.text += self.code_text
+
+        self.text += self.main_func_text
+        self.text += self.main_text
 
     def query(self):
         if self.do_query is True:
@@ -130,14 +172,31 @@ class PythonTemplate:
             for tmpl in self.sub:
                 tmpl.query()
 
-            for cl in self.classes:
-                cl.query()
+    def gen(self) -> PythonTemplate:
 
-    def gen(self):
-        # pass
-        for cl in self.classes:
-            tmpl = cl.generate()
-            self.add(tmpl)
+        if self.sub_alt is True:
+            for x in self.sub:
+                if x.include is True:
+                    x.gen()
+                    return x
+            return self
+
+        for x in self.sub:
+            if x.include is True:
+                x.gen()
+                self.add(x)
+
+        return self
+
+    def writef(self, file_name) -> str:
+
+        with open(file_name, "w") as file:
+            file.write(self.text)
+        os.chmod(file_name, 0o770)
+        return file_name
+
+    def __str__(self) -> str:
+        return self.text
 
 
 class PythonGenerator(PythonTemplate):
@@ -147,12 +206,6 @@ class PythonGenerator(PythonTemplate):
         super().__init__()
         self.conf = conf
         self.pre = pre
-
-    def clear(self):
-        self.text = ""
-
-    def replace(self, old: str, new: str):
-        self.text = self.text.replace(old, new)
 
     def add_separator(self, header):
         if self.conf.has_separators:
@@ -166,26 +219,10 @@ class PythonGenerator(PythonTemplate):
         for x in self.pre:
             x.query()
             if x.include is True:
-                x.gen()
-                self.add(x)
+                t = x.gen()
+                self.add(t)
 
-        # if Bp.read_bool("Include argparse?", default=True):
-        #     if Bp.read_bool("Argparse with subcommands?", default=False):
-        #         self.add(t_argtable_cmd)
-        #     else:
-        #         self.add(t_argtable)
-
-        self.text += self.preamble_text
-        self.text += self.header_text
-        self.add_separator("Imports")
-        self.text += self.imports_text
-        self.add_separator("Variables")
-        self.text += self.variables_text
-        self.add_separator("Code")
-        self.text += self.code_text
-
-        self.text += self.main_func_text
-        self.text += self.main_text
+        self.sumarize()
 
         self.replace("__NAME__", self.conf.name)
         self.replace("__DESCRIPTION__", self.conf.description)
@@ -205,9 +242,8 @@ class PythonGenerator(PythonTemplate):
         else:
             file_name = f"{dir}/{self.conf.name}"
 
-        with open(file_name, "w") as file:
-            file.write(self.text)
-        os.chmod(file_name, 0o770)
+        self.writef(file_name)
+
         return file_name
 
     def __str__(self) -> str:
@@ -218,7 +254,7 @@ class PythonGenerator(PythonTemplate):
 class ClassTemplate:
     name: str = ""
     parrent: str = ""
-    methods: str = ""
+#    methods: str = ""
     is_dataclass: bool = False
     decorator_text: str = ""
     vars_text: str = ""
@@ -272,39 +308,6 @@ class ClassTemplate:
         return PythonTemplate(code_text=self.text)
 
 
-class ClassGenerator(ClassTemplate):
-    def __init__(self, l):
-        super().__init__()
-        self.ll = l
-
-    def subs(self):
-        pass
-
-    def generate(self) -> PythonTemplate:
-        # if self.is_dataclass:
-        #     self.add(dataclass_decorator)
-
-        first = self.ll[0]
-
-        self.text = f"class {first.name}({first.parrent}):\n"
-
-        for tmpl in self.ll:
-            tmpl.query()
-            if tmpl.include is True:
-                tmpl.gen()
-                self += tmpl
-                # self.add(tmpl)
-            # if tmpl.include is True:
-            #     self.add(tmpl)
-
-        self.text += self.vars_text
-        self.text += self.init_text
-        self.text += self.methods_text
-        self.text += "\n\n"
-
-        return PythonTemplate(code_text=self.text)
-
-
 dataclass_decorator = ClassTemplate(
     decorator_text="""\
 @dataclass
@@ -313,7 +316,7 @@ dataclass_decorator = ClassTemplate(
 
 t_preamble = PythonTemplate(
     do_query=False,
-    query_text="Inlcude preamble?",
+    query_text="Include preamble?",
     preamble_text="""\
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -414,29 +417,9 @@ class App:
 """,
 )
 
-t_argtable = PythonTemplate(
-    query_text="Include argparser?",
-    imports_text="""\
-import argparse
-""",
-    main_func_text="""\
-    parser = argparse.ArgumentParser(
-        prog=App.NAME,
-        description=App.DESCRIPTION,
-        epilog="",
-        add_help=True)
-    parser.add_argument("--debug", action="store_true", default=False,
-                        help="Print debug messages")
-    parser.add_argument("--version", action="version",
-                        version=f"{App.NAME} {App.VERSION}",
-                        help="Print version information")
-    args = parser.parse_args()
-    #parser.print_help()
-
-""",
-)
 
 t_argtable_cmd = PythonTemplate(
+    query_text="Argparse with subcommands?",
     imports_text="""\
 import argparse
 """,
@@ -474,6 +457,30 @@ def cmd_cmd1():
         args.func()
         exit(0)
 
+    #parser.print_help()
+
+""",
+)
+
+t_argtable = PythonTemplate(
+    query_text="Include argparser?",
+    sub_alt=True,
+    sub=[t_argtable_cmd],
+    imports_text="""\
+import argparse
+""",
+    main_func_text="""\
+    parser = argparse.ArgumentParser(
+        prog=App.NAME,
+        description=App.DESCRIPTION,
+        epilog="",
+        add_help=True)
+    parser.add_argument("--debug", action="store_true", default=False,
+                        help="Print debug messages")
+    parser.add_argument("--version", action="version",
+                        version=f"{App.NAME} {App.VERSION}",
+                        help="Print version information")
+    args = parser.parse_args()
     #parser.print_help()
 
 """,
@@ -537,9 +544,9 @@ import logging
 #         return (result == QDialog.Accepted)
 
 
-qt5_menuitems = ClassTemplate(
+qt5_menuitems = PythonTemplate(
     query_text="Qt5: Include menu items?",
-    init_text="""\
+    class_init_text="""\
 
         # Menuitems
         self.menuFile = QMenu("File", self.menubar)
@@ -558,7 +565,7 @@ qt5_menuitems = ClassTemplate(
         self.actionQuit.triggered.connect(self.quit)
         self.menuFile.addAction(self.actionQuit)
 """,
-    methods_text="""\
+    class_methods_text="""\
     def open(self):
         files = QFileDialog.getOpenFileNames(self, "Open file", ".", "*.*")
 
@@ -574,10 +581,10 @@ qt5_menuitems = ClassTemplate(
 """,
 )
 
-qt5_menues = ClassTemplate(
+qt5_menues = PythonTemplate(
     query_text="Qt5: Include menubar?",
     sub=[qt5_menuitems],
-    init_text="""\
+    class_init_text="""\
 
         # Menu bar
         self.menubar = QMenuBar(self)
@@ -585,9 +592,9 @@ qt5_menues = ClassTemplate(
     """,
 )
 
-qt5_statusbar = ClassTemplate(
+qt5_statusbar = PythonTemplate(
     query_text="Qt5: Include statusbar?",
-    init_text="""\
+    class_init_text="""\
 
         # Status bar
         self.statusbar = QStatusBar(self)
@@ -596,14 +603,14 @@ qt5_statusbar = ClassTemplate(
 """,
 )
 
-qt5_mainwin = ClassTemplate(
+qt5_mainwin = PythonTemplate(
     do_query=True,
     include=True,
     query_text="Qt5: Main window?",
-    name="MainWindow",
-    parrent="QMainWindow",
+    class_name="MainWindow",
+    class_parrent="QMainWindow",
     sub=[qt5_menues, qt5_statusbar],
-    init_text="""\
+    class_init_text="""\
     def __init__(self, parent=None) -> None:
         super(MainWindow, self).__init__(parent)
         self.resize(300,300)
@@ -618,7 +625,7 @@ qt5_mainwin = ClassTemplate(
         self.mainLayout.setContentsMargins(2, 2, 2, 2)
         self.mainLayout.setSpacing(2)
 """,
-    methods_text="""\
+    class_methods_text="""\
 
     def closeEvent(self, ev: QCloseEvent) -> None:
         return super().closeEvent(ev)
@@ -627,8 +634,8 @@ qt5_mainwin = ClassTemplate(
 
 
 t_qt5 = PythonTemplate(
-    query_text="Qt5: Create main window?",
-    classes=[qt5_mainwin],
+    query_text="Qt5: Create application?",
+    sub=[qt5_mainwin],
     imports_text="""\
 from PyQt5.QtCore import QIODevice, QSettings, QSize, Qt, QTimer
 from PyQt5.QtGui import QCloseEvent, QIcon
@@ -645,44 +652,6 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QDialogButtonBox,
     sys.exit(app.exec_())
 """,
 )
-
-# qt5_menuitems = ClassTemplate(
-#     query_text="Qt5: Include menu items?",
-#     init_text="""\
-
-#         # Menuitems
-#         self.menuFile = QtWidgets.QMenu("File", self.menubar)
-#         self.menubar.addAction(self.menuFile.menuAction())
-
-#         self.actionOpen = QtWidgets.QAction("Open", self)
-#         self.actionOpen.setStatusTip("Open file")
-#         self.actionOpen.setShortcut("Ctrl+O")
-#         self.actionOpen.triggered.connect(self.open)
-#         self.menuFile.addAction(self.actionOpen)
-#         self.menuFile.addSeparator()
-
-#         self.actionQuit = QtWidgets.QAction("Quit", self)
-#         self.actionQuit.setStatusTip("Quit application")
-#         self.actionQuit.setShortcut("Ctrl+Q")
-#         self.actionQuit.triggered.connect(self.quit)
-#         self.menuFile.addAction(self.actionQuit)
-# """,
-#     methods_text="""\
-#     def open(self):
-#         pass
-
-#     def quit(self):
-#     msgBox = QMessageBox()
-# #         msgBox.setIcon(QMessageBox.Information)
-# #         msgBox.setWindowTitle("Quit")
-# #         msgBox.setText("Are you sure you want to quit?")
-# #         msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
-# #         if msgBox.exec() == QMessageBox.Ok:
-# #             self.close()
-#         self.close()
-
-# """,
-# )
 
 
 t_gtk = PythonTemplate(
