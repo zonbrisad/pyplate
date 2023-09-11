@@ -70,9 +70,9 @@ class Query:
             sys.stdout.write(question + f"[{s}]>")
             choice = input().lower()
 
-            # if choice.isalnum():
-            #    return choice
-
+            if choice == "":
+                print("")
+                
             if choice == "" and default is not None:
                 return default
             else:
@@ -133,6 +133,9 @@ class Query:
         while True:
             sys.stdout.write(f"{question} {prompt}")
             choice = input().lower()
+
+            if choice == "":
+                print("")
 
             if choice == "" and default is not None:
                 return default
