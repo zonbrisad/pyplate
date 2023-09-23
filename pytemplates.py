@@ -13,10 +13,8 @@
 #
 # ----------------------------------------------------------------------------
 
-
 from __future__ import annotations
 
-import argparse
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -37,6 +35,10 @@ class PyTemplate:
     main_func_text: str = ""
     main_text: str = ""
     query_text: str = ""
+    class_decorators: str = ""
+    class_vars: str = ""
+    class_methods: str = ""
+    # class_text: str = ""
     do_query: bool = False
     include: bool = True
     alt: List[PyTemplate] = field(default_factory=list)
@@ -50,6 +52,9 @@ class PyTemplate:
         self.main_func_declaration_text += other.main_func_declaration_text
         self.main_func_text += other.main_func_text
         self.main_text += other.main_text
+        self.class_decorators += other.class_decorators
+        self.class_vars += other.class_vars
+        self.class_methods += other.class_methods
 
     def query(self) -> None:
         if self.do_query is False:
@@ -64,6 +69,42 @@ class PyTemplate:
                 return self.alt[0]
 
         return self
+
+
+@dataclass
+class ClassTemplate(PyTemplate):
+    name: str = ""
+    parrent: str = ""
+    methods: str = ""
+    dataclass: bool = False
+    _init: str = ""
+    _str: str = ""
+    _eq: str = ""
+    vars = None
+
+    def add_var(self, name, type="", default=""):
+        if self.vars is None:
+            self.vars = []
+
+        self.vars.append({name, type, default})
+
+    def __str__(self) -> str:
+        if self.vars is None:
+            self.vars = []
+
+        str = ""
+        if self.dataclass:
+            str = "@dataclass\n"
+
+        if self.parrent == "":
+            str += f"class {self.name}:"
+        else:
+            str = f"class {self.name}({self.parrent}):"
+
+        for v in self.vars:
+            str += f"    {v[0]}"
+
+        return str
 
 
 @dataclass
@@ -88,7 +129,7 @@ class PyConf:
 
     def __post_init__(self) -> None:
         self.date = datetime.now().strftime("%Y-%m-%d")
-        self.out_dir = os.getcwd()
+        #self.out_dir = os.getcwd()
 
     def query(self, args):
         self.query_attr(args, "name", "Enter module name", "")
@@ -187,6 +228,11 @@ class PyGenerator(PyTemplate):
     def __str__(self) -> str:
         return self.text
 
+
+t_init = PyTemplate(
+    imports_text="""\
+"""
+)
 
 t_preamble = PyTemplate(
     preamble_text="""\

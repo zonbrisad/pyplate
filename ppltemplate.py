@@ -35,7 +35,7 @@ from dataclasses import dataclass
 # from datetime import datetime
 from typing import List
 
-from git import Repo
+from git.repo import Repo
 
 from bashplates import Bp
 from pytemplates import *
@@ -63,42 +63,6 @@ template_dir = f"{self_dir}/pyplate"
 # readme_md = f"{template_dir}/README.md"
 
 # Code ----------------------------------------------------------------------
-
-
-@dataclass
-class ClassTemplate():
-    name: str = ""
-    parrent: str = ""
-    methods: str = ""
-    dataclass: bool = False
-    _init: str = ""
-    _str: str = ""
-    _eq: str = ""
-    vars = None
-
-    def add_var(self, name, type="", default=""):
-        if self.vars is None:
-            self.vars = []
-
-        self.vars.append({name, type, default})
-
-    def __str__(self) -> str:
-        if self.vars is None:
-            self.vars = []
-
-        str = ""
-        if self.dataclass:
-            str = "@dataclass\n"
-
-        if self.parrent == "":
-            str += f"class {self.name}:"
-        else:
-            str = f"class {self.name}({self.parrent}):"
-
-        for v in self.vars:
-            str += f"    {v[0]}"
-
-        return str
 
 
 @dataclass
@@ -215,14 +179,8 @@ def cmd_newqt(args):
     create_file(args, [t_preamble, t_header, t_main_application, t_application, t_logging, t_argtable, t_qt5])
 
 
-# def cmd_newgtk(args):
-#     conf = PyConf(args)
-#     conf.query()
-#     generator = PyGenerator(conf, [t_preamble, t_header, t_application, t_gtk])
-#     generator.generate()
-
-#     if not create_project(generator):
-#         generator.write()
+def cmd_newgtk(args):
+    create_file(args, [t_preamble, t_header, t_application, t_gtk])
 
 
 def cmd_newp(args):
@@ -233,16 +191,34 @@ def cmd_newp(args):
 
 
 def cmd_newpkg(args):
-    conf = PyConf()
+    pkg_name = Query.read_string("Package name?")
+    Bp.mkdir(pkg_name)
+
+    conf = PyConf(out_dir=pkg_name)
     conf.name = "__init__.py"
     conf.query_name = False
     conf.query_description = False
     conf.query_author = False
     conf.query_email = False
     conf.query(args)
-    generator = PyGenerator(conf, [])
+    generator = PyGenerator(conf, [t_init])
     generator.generate()
     generator.write()
+
+
+# def cmd_newclass(args):
+#     conf = PyConf()
+#     # create_file(args, [t_preamble, t_header, t_application, t_gtk])
+#     #conf.name = "__init__.py"
+#     # conf.query_name = False
+#     #conf.query_description = False
+#     #conf.query_author = False
+#     #conf.query_email = False
+#     conf.query(args)
+#     generator = PyGenerator(conf, [t_class])
+#     generator.generate()
+#     print(generator)
+#     #generator.write()
 
 
 class Settings:
@@ -358,31 +334,12 @@ def main() -> None:
                           help="Create python project").set_defaults(func=cmd_newp)
     subparsers.add_parser("newpkg", parents=[parrent_parser],
                           help="Create __init__.py package file").set_defaults(func=cmd_newpkg)
-    # parser_new = subparsers.add_parser("new", parents=[parrent_parser],
-    #                                    help="Create a new python file")
-    # parser_new.set_defaults(func=cmd_new)
-
-    # parser_new = subparsers.add_parser("newm", parents=[parrent_parser],
-    #                                    help="Create a new python module")
-    # parser_new.set_defaults(func=cmd_newmod)
-    # parser_new = subparsers.add_parser("newmin", parents=[parrent_parser],
-    #                                    help="Create a new minimal python file")
-    # parser_new.set_defaults(func=cmd_newmin)
+    # subparsers.add_parser("newc", parents=[parrent_parser],
+    #                       help="Create a new python class file").set_defaults(func=cmd_newclass)
     # parser_new = subparsers.add_parser("newgtk", parents=[parrent_parser],
     #                                    help="Create a new GTK3+ application")
     # parser_new.set_defaults(func=cmd_newgtk)
-    # parser_new = subparsers.add_parser("newa", parents=[parrent_parser],
-    #                                    help="Create a new application")
-    # parser_new.set_defaults(func=cmd_newa)
-    # parser_new = subparsers.add_parser("newqt", parents=[parrent_parser],
-    #                                    help="Create a new QT5 application")
-    # parser_new.set_defaults(func=cmd_newqt)
-    # parser_new = subparsers.add_parser("newp", parents=[parrent_parser],
-    #                                    help="Create python project")
-    # parser_new.set_defaults(func=cmd_newp)
-    # parser_new = subparsers.add_parser("newpkg", parents=[parrent_parser],
-    #                                    help="Create __init__.py package file")
-    # parser_new.set_defaults(func=cmd_newpkg)
+
 
     args = parser.parse_args()
 
