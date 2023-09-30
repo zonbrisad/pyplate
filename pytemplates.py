@@ -470,6 +470,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.centralwidget)
         self.verticalLayout = QVBoxLayout(self.centralwidget)
         self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
 
         # TextEdit
         self.textEdit = QTextEdit(self.centralwidget)
