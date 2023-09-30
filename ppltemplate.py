@@ -146,7 +146,7 @@ def create_project(generator: PyGenerator):
 
 def create_file(args, templates: List[PyTemplate]) -> None:
 
-    conf = PyConf()
+    conf = PyConf(out_dir=args.dir)
     conf.query(args)
 
     # if external header, read into var
@@ -204,7 +204,7 @@ def cmd_newpkg(args):
     generator = PyGenerator(conf, [t_init])
     generator.generate()
     generator.write()
-
+    
 
 # def cmd_newclass(args):
 #     conf = PyConf()

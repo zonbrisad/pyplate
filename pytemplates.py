@@ -445,7 +445,7 @@ class AboutDialog(QDialog):
 
         # Buttonbox
         self.buttonBox = QDialogButtonBox(self)
-        self.buttonBox.setStandardButtons( QDialogButtonBox.Ok )
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Ok)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.setCenterButtons(True)
         self.verticalLayout.addWidget(self.buttonBox)
@@ -515,7 +515,7 @@ class MainWindow(QMainWindow):
         msgBox.setIcon(QMessageBox.Information)
         msgBox.setWindowTitle("Quit")
         msgBox.setText("Are you sure you want to quit?")
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel )
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         if msgBox.exec() == QMessageBox.Ok:
             self.close()
 
