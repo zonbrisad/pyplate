@@ -183,6 +183,10 @@ def cmd_newgtk(args):
     create_file(args, [t_preamble, t_header, t_application, t_gtk])
 
 
+def cmd_newmp(args):
+    create_file(args, [t_header, t_micro_python])
+
+
 def cmd_newp(args):
     proj = ProjectGenerator()
     proj.query_attr()
@@ -330,6 +334,8 @@ def main() -> None:
                           help="Create a new application").set_defaults(func=cmd_newa)
     subparsers.add_parser("newqt", parents=[parrent_parser],
                           help="Create a new QT5 application").set_defaults(func=cmd_newqt)
+    subparsers.add_parser("newmp", parents=[parrent_parser],
+                          help="Create a new micro python application").set_defaults(func=cmd_newmp)
     subparsers.add_parser("newp", parents=[parrent_parser],
                           help="Create python project").set_defaults(func=cmd_newp)
     subparsers.add_parser("newpkg", parents=[parrent_parser],

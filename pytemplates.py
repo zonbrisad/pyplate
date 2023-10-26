@@ -111,6 +111,7 @@ class ClassTemplate(PyTemplate):
 class PyConf:
     """PyGenerator configuration class"""
     name: str = ""
+    file_name: str = ""
     author: str = ""
     description: str = ""
     date: str = ""
@@ -133,6 +134,7 @@ class PyConf:
 
     def query(self, args):
         self.query_attr(args, "name", "Enter module name", "")
+        self.file_name = self.name + ".py"
         self.query_attr(args, "description", "Enter brief description", "")
         self.query_attr(args, "author", "Enter name of author", "BP_NAME")
         self.query_attr(args, "email", "Enter email of author", "BP_EMAIL")
@@ -152,7 +154,7 @@ class PyConf:
 
 class PyGenerator(PyTemplate):
     """docstring for generator."""
-    
+
     def __init__(self, conf: PyConf,  templates: List[PyTemplate]):
         super().__init__()
         self.conf = conf
@@ -213,9 +215,9 @@ class PyGenerator(PyTemplate):
 
     def write(self, dir=None) -> str:
         if dir is None:
-            file_name = f"{self.conf.out_dir}/{self.conf.name}"
+            file_name = f"{self.conf.out_dir}/{self.conf.file_name}"
         else:
-            file_name = f"{dir}/{self.conf.name}"
+            file_name = f"{dir}/{self.conf.file_name}"
 
         with open(file_name, "w") as file:
             file.write(self.text)
@@ -388,7 +390,7 @@ t_logging = PyTemplate(
 import logging
 """,
     main_func_text="""\
-    logging_format = "[%(levelname)s] %(lineno)d %(funcName)s() : %(message)s"
+    logging_format = "[%(levelname)s] %(lineno)-4d %(funcName)-14s : %(message)s"
     logging.basicConfig(format=logging_format, level=logging.DEBUG)
 """
 )
@@ -557,15 +559,15 @@ class MainWindow(Gtk.Window):
     Gtk.main()
 """
 )
-
-
-
-
-
-
-
-
-
+t_micro_python = PyTemplate(
+    imports_text="""\
+import pin
+""",
+    code_text="""\
+""",
+    main_func_text="""\
+"""
+)
 
 
 def main() -> None:

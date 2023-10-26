@@ -52,6 +52,10 @@
 
 ## Freqlenty asked Questions
 
+## Todo
+
+- [ ] Make sure debug printout is activated with an argparse option
+
 ## History
 
 [HISTORY.md](/HISTORY.md)
