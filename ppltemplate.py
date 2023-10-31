@@ -49,7 +49,7 @@ self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 
 class App:
     NAME = "ppltemplate"
-    VERSION = "0.5"
+    VERSION = "0.51"
     DESCRIPTION = "ppltemplate "
     LICENSE = ""
     AUTHOR = "Peter Malmberg"

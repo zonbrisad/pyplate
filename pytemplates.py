@@ -31,8 +31,15 @@ class PyTemplate:
     imports_text: str = ""
     variables_text: str = ""
     code_text: str = ""
-    main_func_declaration_text: str = ""
+    main_func_declaration: str = ""
+    main_func_init_text: str = ""
     main_func_text: str = ""
+    main_func_end_text: str = ""
+    argparse_init: str = ""
+    argparse_args: str = ""
+    argparse_subparser: str = ""
+    argparse_parse: str = ""
+    argparse_exec: str = ""
     main_text: str = ""
     query_text: str = ""
     class_decorators: str = ""
@@ -49,9 +56,20 @@ class PyTemplate:
         self.imports_text += other.imports_text
         self.variables_text += other.variables_text
         self.code_text += other.code_text
-        self.main_func_declaration_text += other.main_func_declaration_text
+        self.main_func_declaration += other.main_func_declaration
+
+        self.main_func_init_text += other.main_func_init_text
         self.main_func_text += other.main_func_text
+        self.main_func_end_text += other.main_func_end_text
+
         self.main_text += other.main_text
+
+        self.argparse_init += other.argparse_init
+        self.argparse_args += other.argparse_args
+        self.argparse_subparser += other.argparse_subparser
+        self.argparse_parse += other.argparse_parse
+        self.argparse_exec += other.argparse_exec
+        
         self.class_decorators += other.class_decorators
         self.class_vars += other.class_vars
         self.class_methods += other.class_methods
@@ -192,13 +210,32 @@ class PyGenerator(PyTemplate):
         self.add_separator("Code")
         self.text += self.code_text
 
-        self.text += self.main_func_declaration_text
-        if len(self.main_func_declaration_text) > 0 and len(self.main_func_text) == 0:
-            self.text += "    pass\n"
+        self.text += self.main_func_declaration
 
-        self.text += self.main_func_text
+        text = ""
+        # main function
+        text += self.main_func_init_text
+        text += self.main_func_text
+
+        if self.argparse_init != "":
+            text += self.argparse_init
+            text += self.argparse_args
+            text += self.argparse_subparser
+            text += self.argparse_parse
+            text += self.argparse_exec
+            
+
+        text += self.main_func_end_text
+
+        # if len(self.main_func_declaration) > 0 and len(self.main_func_text) == 0:
+        if len(self.main_func_declaration) > 0 and len(text) == 0:
+            self.text += "    pass\n"
+        else:
+            self.text += text
+
         self.text += "\n\n"
 
+        # __name__ == "__main__"
         self.text += self.main_text
 
         self.replace("__NAME__", self.conf.name)
@@ -262,7 +299,7 @@ t_header = PyTemplate(
 )
 
 t_main = PyTemplate(
-    main_func_declaration_text="""\
+    main_func_declaration="""\
 def main() -> None:
 """,
 
@@ -278,7 +315,7 @@ import traceback
 import os
 import sys
 """,
-    main_func_declaration_text="""\
+    main_func_declaration="""\
 def main() -> None:
 """,
     main_text="""\
@@ -328,30 +365,32 @@ def cmd_cmd1():
 
 
 """,
-    main_func_text="""\
-    p_parser = argparse.ArgumentParser(add_help=False)
-    p_parser.add_argument("--debug", action="store_true", default=False,
-                          help="Print debug messages")
-    p_parser.add_argument("--version", action="version",
+    argparse_init="""\
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--version", action="version",
                           help="Print version information",
                           version=f"{App.NAME} {App.VERSION}")
-
-    parser = argparse.ArgumentParser(
+""",
+    argparse_subparser="""
+    main_parser = argparse.ArgumentParser(
         prog=App.NAME,
         description=App.DESCRIPTION,
         epilog="",
-        parents=[p_parser]
+        parents=[parser]
         )
-    subparsers = parser.add_subparsers(title="Commands",
+
+    subparsers = main_parser.add_subparsers(title="Commands",
                                        help="",
                                        description="")
 
-    cmd1 = subparsers.add_parser("cmd1", parents=[p_parser],
+    cmd1 = subparsers.add_parser("cmd1", parents=[parser],
                                  help="Command 1")
     cmd1.set_defaults(func=cmd_cmd1)
-
+""",
+    argparse_parse="""
     args = parser.parse_args()
-
+""",
+    argparse_exec="""
     if hasattr(args, "func"):
         args.func()
         exit(0)
@@ -367,20 +406,21 @@ t_argtable = PyTemplate(
     imports_text="""\
 import argparse
 """,
-    main_func_text="""\
+    argparse_init="""\
     parser = argparse.ArgumentParser(
         prog=App.NAME,
         description=App.DESCRIPTION,
         epilog="",
         add_help=True)
-    parser.add_argument("--debug", action="store_true", default=False,
-                        help="Print debug messages")
     parser.add_argument("--version", action="version",
                         version=f"{App.NAME} {App.VERSION}",
                         help="Print version information")
+""",
+    argparse_parse="""
     args = parser.parse_args()
-    parser.print_help()
-"""
+""",
+
+    #parser.print_help()
 )
 
 t_logging = PyTemplate(
@@ -389,10 +429,20 @@ t_logging = PyTemplate(
     imports_text="""\
 import logging
 """,
-    main_func_text="""\
+    main_func_init_text="""\
     logging_format = "[%(levelname)s] %(lineno)-4d %(funcName)-14s : %(message)s"
-    logging.basicConfig(format=logging_format, level=logging.DEBUG)
+#    logging.basicConfig(format=logging_format, level=logging.DEBUG)
+
+""",
+    argparse_args="""
+    parser.add_argument("--debug", action="store_true", default=False,
+                        help="Print debug messages")
+""",
+    argparse_exec="""
+    if args.debug:
+        logging.basicConfig(format=logging_format, level=logging.DEBUG)
 """
+
 )
 
 

@@ -1,4 +1,7 @@
 
+# Version 0.51
+- argparse generator improved
+
 # Version 0.5 
 - Major refactoring
 - Added __init__ generatorgs
