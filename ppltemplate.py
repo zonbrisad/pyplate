@@ -35,7 +35,14 @@ from dataclasses import dataclass
 # from datetime import datetime
 from typing import List
 
-from git.repo import Repo
+try:
+    from git.repo import Repo
+except ModuleNotFoundError:
+    print("\nYou need library 'python3-git' to run this program.")
+    print("\nTo install:")
+    print(">sudo apt install python3-git\n")
+    exit(0)
+
 
 from bashplates import Bp
 from pytemplates import *
