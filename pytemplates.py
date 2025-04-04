@@ -69,7 +69,7 @@ class PyTemplate:
         self.argparse_subparser += other.argparse_subparser
         self.argparse_parse += other.argparse_parse
         self.argparse_exec += other.argparse_exec
-        
+
         self.class_decorators += other.class_decorators
         self.class_vars += other.class_vars
         self.class_methods += other.class_methods
@@ -223,7 +223,6 @@ class PyGenerator(PyTemplate):
             text += self.argparse_subparser
             text += self.argparse_parse
             text += self.argparse_exec
-            
 
         text += self.main_func_end_text
 
@@ -431,7 +430,7 @@ import logging
 """,
     main_func_init_text="""\
     logging_format = "[%(levelname)s] %(lineno)-4d %(funcName)-14s : %(message)s"
-#    logging.basicConfig(format=logging_format, level=logging.DEBUG)
+    logging.basicConfig(format=logging_format)
 
 """,
     argparse_args="""

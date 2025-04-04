@@ -32,19 +32,23 @@ import os
 import sys
 import traceback
 from dataclasses import dataclass
+from tkinter import N
 # from datetime import datetime
 from typing import List
 
 from git.repo import Repo
 
 from bashplates import Bp
-from pytemplates import *
+from pytemplates import (PyConf, PyGenerator, PyTemplate, t_application,
+                         t_argtable, t_gtk, t_header, t_init, t_logging,
+                         t_main, t_main_application, t_micro_python,
+                         t_preamble, t_qt5)
 from query import Query
 
 # Settings ------------------------------------------------------------------
 
 # Absolute path to script itself
-self_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+self_dir = os.path.abspath(os.path.dirname(__file__))
 
 
 class App:
@@ -230,8 +234,12 @@ class Settings:
     SETTINGS_FILE = "pyplate.json"
 
     def __init__(self) -> None:
-        with open("pyplate/pyplate.json") as f:
-            data = json.load(f)
+        try:
+            with open("pyplate/pyplate.json") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            logging.error("Settings file 'pyplate/pyplate.json' not found.")
+            data = {}
 
         print(data)
 
@@ -241,104 +249,110 @@ class Settings:
 
 
 def main() -> None:
-
-    # logging.basicConfig(level=logging.DEBUG,
-    #                     format="[%(levelname)s]%(asctime)s %(message)s")
-
-    parrent_parser = argparse.ArgumentParser(add_help=False)
-    parrent_parser.add_argument("--name",
+    logging_format = "[%(levelname)s] %(lineno)d %(funcName)s() : %(message)s"
+    logging.basicConfig(format = logging_format)
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument("--name",
                                 type=str,
                                 help="Name of Python module"
                                 )
-    parrent_parser.add_argument("--description",
+    parent_parser.add_argument("--description",
                                 type=str,
-                                help="Brief description"
+                                help="Brief description",
+                                metavar="DESC",
                                 )
-    parrent_parser.add_argument("--author",
+    parent_parser.add_argument("--author",
                                 type=str,
-                                help="Name of author"
+                                help="Name of author",
+                                
                                 )
-    parrent_parser.add_argument("--email",
+    parent_parser.add_argument("--email",
                                 type=str,
                                 help="Email of author"
                                 )
-    parrent_parser.add_argument("--project",
+    parent_parser.add_argument("--project",
                                 type=str,
-                                help="Name of project"
+                                help="Name of project",
+                                metavar="NAME",
                                 )
-    # parrent_parser.add_argument("--license",
+    # parent_parser.add_argument("--license",
     #                             type=str,
     #                             help="License of new file",
     #                             default=conf.license)
 
-    parrent_parser.add_argument("--main",
+    parent_parser.add_argument("--main",
                                 action="store_true",
                                 help="Add main function block",
                                 default=False)
-    parrent_parser.add_argument("--header",
+    parent_parser.add_argument("--header",
                                 type=argparse.FileType("r"),
-                                help="Include external header"
+                                help="Include external header",
+                                metavar="FILE",
                                 )
-    parrent_parser.add_argument("--dir",
+    parent_parser.add_argument("--dir",
                                 type=str,
                                 help="Project source directory",
-                                default=".")
-    parrent_parser.add_argument("--basedir",
+                                default=".",
+                                metavar="DIR",
+                                )
+    
+    parent_parser.add_argument("--basedir",
                                 type=str,
                                 help="Project directory",
-                                default=".")
-    parrent_parser.add_argument("--write",
+                                default=".",
+                                metavar="DIR",
+                                )
+    parent_parser.add_argument("--write",
                                 action="store_true",
                                 help="Write file to disk",
                                 default=False)
-    parrent_parser.add_argument("--printheader",
+    parent_parser.add_argument("--printheader",
                                 action="store_true",
                                 help="Print default header to stdout",
                                 default=False)
-    parrent_parser.add_argument("--separators",
+    parent_parser.add_argument("--separators",
                                 action="store_true",
                                 help="Add code separators",
                                 default=False)
-#    parrent_parser.add_argument("--outfile",
+#    parent_parser.add_argument("--outfile",
 #                                type=argparse.FileType("w",0),
 #                                help="Write generator to file")
-    parrent_parser.add_argument("--debug",
+    parent_parser.add_argument("--debug",
                                 action="store_true",
                                 help="Print debug information")
-    parrent_parser.add_argument("--version",
+    parent_parser.add_argument("--version",
                                 action="version",
                                 help="Print application version",
                                 version=App.VERSION)
-    parrent_parser.add_argument(
+    parent_parser.add_argument(
         "--dryrun",
         action="store_true",
         help="Do not write to file and print to stdout",
         default=False,
     )
 
-    # options parsing
     parser = argparse.ArgumentParser(
             prog=App.NAME,
             description="Pyplate python generator generator",
             epilog="Pyplate <https://github.com/zonbrisad/pyplate.git>",
-            parents=[parrent_parser],
-        )
+            parents=[parent_parser],
+        )          
 
     subparsers = parser.add_subparsers(title="Commands",
                                        help="",
                                        description="")
 
-    subparsers.add_parser("new", parents=[parrent_parser],
+    subparsers.add_parser("new", parents=[parent_parser],
                           help="Create a new python file").set_defaults(func=cmd_new)
-    subparsers.add_parser("newa", parents=[parrent_parser],
+    subparsers.add_parser("newa", parents=[parent_parser],
                           help="Create a new application").set_defaults(func=cmd_newa)
-    subparsers.add_parser("newqt", parents=[parrent_parser],
+    subparsers.add_parser("newqt", parents=[parent_parser],
                           help="Create a new QT5 application").set_defaults(func=cmd_newqt)
-    subparsers.add_parser("newmp", parents=[parrent_parser],
+    subparsers.add_parser("newmp", parents=[parent_parser],
                           help="Create a new micro python application").set_defaults(func=cmd_newmp)
-    subparsers.add_parser("newp", parents=[parrent_parser],
+    subparsers.add_parser("newp", parents=[parent_parser],
                           help="Create python project").set_defaults(func=cmd_newp)
-    subparsers.add_parser("newpkg", parents=[parrent_parser],
+    subparsers.add_parser("newpkg", parents=[parent_parser],
                           help="Create __init__.py package file").set_defaults(func=cmd_newpkg)
     # subparsers.add_parser("newc", parents=[parrent_parser],
     #                       help="Create a new python class file").set_defaults(func=cmd_newclass)
@@ -346,8 +360,12 @@ def main() -> None:
     #                                    help="Create a new GTK3+ application")
     # parser_new.set_defaults(func=cmd_newgtk)
 
-
     args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format=logging_format)
+        logging.debug("Debug mode enabled")
 
     if hasattr(args, "func"):
         args.func(args)
@@ -373,3 +391,4 @@ if __name__ == "__main__":
         print(str(e))
         traceback.print_exc()
         os._exit(1)
+        
