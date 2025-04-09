@@ -20,6 +20,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
 
+from sympy import N
+
 from query import Query
 
 
@@ -142,32 +144,33 @@ class PyConf:
     has_separators: bool = False
 
     query_name: bool = True
+    query_file_name: bool = True
     query_description: bool = True
     query_author: bool = True
     query_email: bool = True
 
     def __post_init__(self) -> None:
         self.date = datetime.now().strftime("%Y-%m-%d")
-        #self.out_dir = os.getcwd()
+        # self.out_dir = os.getcwd()
 
-    def query(self, args):
-        self.query_attr(args, "name", "Enter module name", "")
-        self.file_name = self.name + ".py"
-        self.query_attr(args, "description", "Enter brief description", "")
-        self.query_attr(args, "author", "Enter name of author", "BP_NAME")
-        self.query_attr(args, "email", "Enter email of author", "BP_EMAIL")
+    def query(self, args) -> None:
+        self.query_attr(args.name, "name", "Enter module name", "")
+        self.query_attr(None, "file_name", "Enter file name", self.name + ".py")
+        self.query_attr(args.description, "description", "Enter brief description", "")
+        self.query_attr(args.author, "author", "Enter name of author", os.getenv("BP_NAME"))
+        self.query_attr(args.email, "email", "Enter email of author", os.getenv("BP_EMAIL"))
 
-    def query_attr(self, args, attribute: str, question: str, env: str):
-        q = getattr(self, f"query_{attribute}")
+    def query_attr(self, cmd_arg: str | None, attribute: str, question: str, default: str) -> None:
 
-        if q is not True:
+        if getattr(self, f"query_{attribute}") is not True:
             return
 
-        if getattr(args, attribute) is not None:  # If command line arguments are present use them
-            setattr(self, attribute, getattr(args, attribute))
-        else:
+        if cmd_arg is None:  # If command line arguments are present use them
             setattr(self, attribute,
-                    Query.read_string(question, os.getenv(env)))
+                    Query.read_string(question, default))
+            return
+
+        setattr(self, attribute, cmd_arg)
 
 
 class PyGenerator(PyTemplate):

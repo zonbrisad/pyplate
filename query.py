@@ -72,7 +72,7 @@ class Query:
 
             if choice == "":
                 print("")
-                
+
             if choice == "" and default is not None:
                 return default
             else:

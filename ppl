@@ -32,8 +32,6 @@ import os
 import sys
 import traceback
 from dataclasses import dataclass
-from tkinter import N
-# from datetime import datetime
 from typing import List
 
 try:
@@ -257,7 +255,8 @@ class Settings:
 
 def main() -> None:
     logging_format = "[%(levelname)s] %(lineno)d %(funcName)s() : %(message)s"
-    logging.basicConfig(format = logging_format)
+    logging.basicConfig(format=logging_format)
+
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument("--name",
                                 type=str,
@@ -270,8 +269,7 @@ def main() -> None:
                                 )
     parent_parser.add_argument("--author",
                                 type=str,
-                                help="Name of author",
-                                
+                                help="Name of author",                     
                                 )
     parent_parser.add_argument("--email",
                                 type=str,
@@ -340,7 +338,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
             prog=App.NAME,
-            description="Pyplate python generator generator",
+            description="Python code generator",
             epilog="Pyplate <https://github.com/zonbrisad/pyplate.git>",
             parents=[parent_parser],
         )          
@@ -394,8 +392,8 @@ if __name__ == "__main__":
     except SystemExit as e:        # sys.exit()
         raise e
     except Exception as e:
-        print('ERROR, UNEXPECTED EXCEPTION')
-        print(str(e))
+        logging.error('UNEXPECTED EXCEPTION')
+        logging.error(str(e))
         traceback.print_exc()
         os._exit(1)
-        
+   
